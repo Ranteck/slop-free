@@ -8,6 +8,18 @@
 npm create zero-ts@latest my-app
 ```
 
+For existing projects:
+
+```bash
+npx create-zero-ts apply
+```
+
+If you installed the package globally, you can also run:
+
+```bash
+zero-ts apply
+```
+
 Also works with:
 
 ```bash
@@ -45,4 +57,5 @@ To test locally without publishing:
 ```bash
 npm run build -w create-zero-ts
 node packages/create-zero-ts/dist/cli.js demo-app --yes --no-install
+node packages/create-zero-ts/dist/cli.js apply --dry-run --yes
 ```

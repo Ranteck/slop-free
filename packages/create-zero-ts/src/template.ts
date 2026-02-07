@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import validatePackageName from "validate-npm-package-name";
 
-const TEMPLATE_TOKEN_PROJECT_NAME = "__PROJECT_NAME__";
+export const TEMPLATE_TOKEN_PROJECT_NAME = "__PROJECT_NAME__";
 
 export const sanitizePackageName = (input: string): string =>
   input
@@ -57,9 +57,12 @@ export const ensureTargetDirectory = async (
   await mkdir(targetDirectoryPath, { recursive: true });
 };
 
+export const renderTemplateContent = (source: string, projectName: string): string =>
+  source.replaceAll(TEMPLATE_TOKEN_PROJECT_NAME, projectName);
+
 const replaceTemplateTokens = async (filePath: string, projectName: string): Promise<void> => {
   const source = await readFile(filePath, "utf8");
-  const output = source.replaceAll(TEMPLATE_TOKEN_PROJECT_NAME, projectName);
+  const output = renderTemplateContent(source, projectName);
   if (source !== output) {
     await writeFile(filePath, output, "utf8");
   }

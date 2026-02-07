@@ -4,7 +4,8 @@
   "description": "Ultra-strict TypeScript project generator",
   "type": "module",
   "bin": {
-    "create-zero-ts": "dist/cli.js"
+    "create-zero-ts": "dist/cli.js",
+    "zero-ts": "dist/cli.js"
   },
   "files": [
     "dist",

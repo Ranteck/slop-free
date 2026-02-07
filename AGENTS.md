@@ -20,6 +20,7 @@ Keep generated-project rules inside `packages/scaffold-ultra/template`, not dire
 
 Local smoke test:
 - `node packages/create-zero-ts/dist/cli.js demo --yes --no-install`
+- `node packages/create-zero-ts/dist/cli.js apply --dry-run --yes`
 
 ## Coding Style & Naming Conventions
 - TypeScript ESM everywhere (`"type": "module"`).
