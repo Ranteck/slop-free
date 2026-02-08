@@ -18,9 +18,23 @@ export interface ApplyExecutionOptions {
   readonly install?: boolean;
   readonly runChecks?: boolean;
   readonly yes: boolean;
+  readonly wizard: boolean;
   readonly dryRun: boolean;
   readonly backup: boolean;
   readonly force: boolean;
+}
+
+export type ApplyProgressStage =
+  | "creating_files"
+  | "resolving_conflicts"
+  | "updating_package_json"
+  | "installing_dependencies"
+  | "running_checks"
+  | "completed";
+
+export interface ApplyProgressEvent {
+  readonly stage: ApplyProgressStage;
+  readonly message: string;
 }
 
 export interface ManagedFile {

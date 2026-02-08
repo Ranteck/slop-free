@@ -7,7 +7,7 @@ describe("buildPackageJsonPlan", (): void => {
     const current: PackageJsonLike = {
       name: "demo",
       scripts: {
-        test: "vitest",
+        test: "jest --config custom.js",
       },
       dependencies: {},
       devDependencies: {},
@@ -16,6 +16,7 @@ describe("buildPackageJsonPlan", (): void => {
     const template: PackageJsonLike = {
       scripts: {
         test: "vitest run",
+        "zero:check": "npm run typecheck && npm run lint",
         check: "npm run lint",
         prepare: "lefthook install",
       },
@@ -34,9 +35,11 @@ describe("buildPackageJsonPlan", (): void => {
 
     expect(plan.summary.changed).toBe(true);
     expect(plan.summary.addedScripts).toContain("check");
-    expect(plan.summary.updatedScripts).toContain("test");
+    expect(plan.summary.addedScripts).toContain("zero:check");
+    expect(plan.summary.updatedScripts).toHaveLength(0);
     expect(plan.summary.addedDependencies).toContain("zod");
     expect(plan.summary.addedDevDependencies).toContain("eslint");
+    expect(plan.next.scripts?.test).toBe("jest --config custom.js");
     expect(plan.next.scripts?.prepare).toBe("lefthook install");
   });
 

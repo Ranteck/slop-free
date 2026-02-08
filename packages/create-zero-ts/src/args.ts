@@ -19,8 +19,12 @@ interface MutableCreateOptions extends Omit<CreateCliOptions, "command" | "yes" 
   skipGit: boolean;
 }
 
-interface MutableApplyOptions extends Omit<ApplyCliOptions, "command" | "yes" | "dryRun" | "backup" | "force"> {
+interface MutableApplyOptions extends Omit<
+  ApplyCliOptions,
+  "command" | "yes" | "wizard" | "dryRun" | "backup" | "force"
+> {
   yes: boolean;
+  wizard: boolean;
   dryRun: boolean;
   backup: boolean;
   force: boolean;
@@ -115,6 +119,7 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
     packageManager: undefined,
     install: undefined,
     yes: false,
+    wizard: false,
     dryRun: false,
     runChecks: undefined,
     backup: false,
@@ -133,6 +138,11 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
 
     if (token === "--yes" || token === "-y") {
       options.yes = true;
+      continue;
+    }
+
+    if (token === "--wizard") {
+      options.wizard = true;
       continue;
     }
 
@@ -202,6 +212,7 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
     packageManager: options.packageManager,
     install: options.install,
     yes: options.yes,
+    wizard: options.wizard,
     dryRun: options.dryRun,
     runChecks: options.runChecks,
     backup: options.backup,

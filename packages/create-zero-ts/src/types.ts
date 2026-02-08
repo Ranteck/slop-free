@@ -21,6 +21,7 @@ export interface CreateCliOptions extends BaseCliOptions {
 export interface ApplyCliOptions extends BaseCliOptions {
   readonly command: "apply";
   readonly cwd?: string;
+  readonly wizard: boolean;
   readonly dryRun: boolean;
   readonly runChecks?: boolean;
   readonly backup: boolean;

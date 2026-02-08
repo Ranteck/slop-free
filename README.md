@@ -14,6 +14,26 @@ For existing projects:
 npx create-zero-ts apply
 ```
 
+`apply` now runs as a guided installer: it shows plan details, asks how to handle conflicting files (`review`, `skip`, `overwrite`), and can create backups before overwriting.
+
+Explicit wizard mode (same interactive behavior, explicit intent):
+
+```bash
+npx create-zero-ts apply --wizard
+```
+
+Safe non-interactive mode:
+
+```bash
+npx create-zero-ts apply --yes
+```
+
+Force overwrite mode:
+
+```bash
+npx create-zero-ts apply --yes --force --backup
+```
+
 If you installed the package globally, you can also run:
 
 ```bash
@@ -33,9 +53,14 @@ bun create zero-ts my-app
 - Strict TypeScript (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`)
 - ESLint flat config with anti-escape rules (`no any`, controlled `ts-expect-error`, no chained assertions)
 - Runtime validation with `zod` (`src/env.ts` + unknown-input parse pattern)
+- Non-destructive quality aliases (`zero:check`, `zero:quality`) for existing projects
+- Optional GitHub Actions quality workflow (`.github/workflows/quality.yml`)
+- `.zero-ts.json` manifest with applied `create-zero-ts` version
 - Quality gates:
   - Fast gate: format, lint, typecheck
   - Full gate: tests + coverage, dead code, dependency rules, circular checks, audit
+
+Node-first defaults: `src/env.ts` uses `process.env`. For browser-only apps, adapt env access to your bundler.
 
 ## Repository layout
 

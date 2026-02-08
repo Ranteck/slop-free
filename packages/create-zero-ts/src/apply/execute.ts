@@ -2,7 +2,7 @@ import path from "node:path";
 import { runPostApplyChecks } from "./checks.js";
 import { backupFile, readTextIfExists, writeTextFile } from "./io.js";
 import { promptFileConflictResolution } from "./prompts.js";
-import type { ApplyPlan, ApplySummary } from "./types.js";
+import type { ApplyPlan, ApplyProgressEvent, ApplySummary } from "./types.js";
 import { installCommand } from "../package-manager.js";
 import { runCommand } from "../process.js";
 import type { PackageManager } from "../types.js";
@@ -10,13 +10,21 @@ import type { PackageManager } from "../types.js";
 export interface ExecuteApplyPlanOptions {
   readonly targetDir: string;
   readonly packageManager: PackageManager;
-  readonly yes: boolean;
-  readonly force: boolean;
+  readonly conflictPolicy: "review" | "skip" | "overwrite";
   readonly dryRun: boolean;
   readonly backup: boolean;
   readonly shouldInstall: boolean;
   readonly shouldRunChecks: boolean;
+  readonly onProgress?: (event: ApplyProgressEvent) => void;
 }
+
+const emitProgress = (
+  options: ExecuteApplyPlanOptions,
+  stage: ApplyProgressEvent["stage"],
+  message: string,
+): void => {
+  options.onProgress?.({ stage, message });
+};
 
 const writeManagedFile = async (
   targetDir: string,
@@ -49,12 +57,14 @@ const applyPackageJson = async (
 
   const decision = currentSource === undefined
     ? "overwrite"
+    : options.conflictPolicy === "overwrite"
+    ? "overwrite"
+    : options.conflictPolicy === "skip"
+    ? "skip"
     : await promptFileConflictResolution(
       "package.json",
       currentSource,
       nextSource,
-      options.yes,
-      options.force,
     );
 
   if (decision === "skip") {
@@ -80,6 +90,12 @@ export const executeApplyPlan = async (
   const overwrittenFiles: string[] = [];
   const skippedFiles: string[] = [];
 
+  emitProgress(
+    options,
+    "creating_files",
+    `Creating ${plan.filesToCreate.length} new managed file(s).`,
+  );
+
   for (const managedFile of plan.filesToCreate) {
     await writeManagedFile(
       options.targetDir,
@@ -89,6 +105,12 @@ export const executeApplyPlan = async (
     );
     createdFiles.push(managedFile.relativePath);
   }
+
+  emitProgress(
+    options,
+    "resolving_conflicts",
+    `Resolving ${plan.conflictingFiles.length} conflicting managed file(s).`,
+  );
 
   for (const managedFile of plan.conflictingFiles) {
     const targetPath = path.join(options.targetDir, managedFile.relativePath);
@@ -109,13 +131,15 @@ export const executeApplyPlan = async (
       continue;
     }
 
-    const decision = await promptFileConflictResolution(
-      managedFile.relativePath,
-      existing,
-      managedFile.content,
-      options.yes,
-      options.force,
-    );
+    const decision = options.conflictPolicy === "overwrite"
+      ? "overwrite"
+      : options.conflictPolicy === "skip"
+      ? "skip"
+      : await promptFileConflictResolution(
+        managedFile.relativePath,
+        existing,
+        managedFile.content,
+      );
 
     if (decision === "skip") {
       skippedFiles.push(managedFile.relativePath);
@@ -135,9 +159,15 @@ export const executeApplyPlan = async (
     overwrittenFiles.push(managedFile.relativePath);
   }
 
+  emitProgress(options, "updating_package_json", "Updating package.json plan.");
   const packageJsonUpdated = await applyPackageJson(plan, options);
 
   let installRan = false;
+  emitProgress(
+    options,
+    "installing_dependencies",
+    options.shouldInstall ? "Installing dependencies." : "Skipping dependency install.",
+  );
   if (options.shouldInstall) {
     if (!options.dryRun) {
       runCommand(
@@ -151,6 +181,11 @@ export const executeApplyPlan = async (
   }
 
   let checksRan: readonly string[] = [];
+  emitProgress(
+    options,
+    "running_checks",
+    options.shouldRunChecks ? "Running post-apply checks." : "Skipping post-apply checks.",
+  );
   if (options.shouldRunChecks) {
     if (options.dryRun) {
       checksRan = ["typecheck", "lint", "test"];
@@ -162,6 +197,8 @@ export const executeApplyPlan = async (
       checksRan = runPostApplyChecks(options.packageManager, options.targetDir, packageJsonForChecks);
     }
   }
+
+  emitProgress(options, "completed", "Apply execution completed.");
 
   return {
     createdFiles,

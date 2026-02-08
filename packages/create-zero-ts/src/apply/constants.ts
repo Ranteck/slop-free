@@ -5,6 +5,10 @@ export interface ManagedTemplateFile {
 
 export const MANAGED_TEMPLATE_FILES: readonly ManagedTemplateFile[] = [
   {
+    sourceRelativePath: ".zero-ts.json",
+    targetRelativePath: ".zero-ts.json",
+  },
+  {
     sourceRelativePath: "tsconfig.json",
     targetRelativePath: "tsconfig.json",
   },
@@ -39,5 +43,9 @@ export const MANAGED_TEMPLATE_FILES: readonly ManagedTemplateFile[] = [
   {
     sourceRelativePath: "src/env.ts",
     targetRelativePath: "src/env.ts",
+  },
+  {
+    sourceRelativePath: ".github/workflows/quality.yml",
+    targetRelativePath: ".github/workflows/quality.yml",
   },
 ];

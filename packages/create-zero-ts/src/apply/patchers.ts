@@ -14,6 +14,8 @@ const KNOWN_SCRIPT_KEYS: readonly string[] = [
   "deps:graph",
   "deps:cycles",
   "audit",
+  "zero:check",
+  "zero:quality",
   "check",
   "quality",
   "prepare",
@@ -76,12 +78,6 @@ const mergeScripts = (
     if (previous === undefined) {
       baseScripts[key] = templateValue;
       addedScripts.push(key);
-      continue;
-    }
-
-    if (previous !== templateValue) {
-      baseScripts[key] = templateValue;
-      updatedScripts.push(key);
     }
   }
 

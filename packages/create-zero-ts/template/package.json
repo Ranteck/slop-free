@@ -20,8 +20,10 @@
     "deps:graph": "depcruise src --config depcruise.config.cjs --output-type err-long",
     "deps:cycles": "madge src --circular --extensions ts",
     "audit": "npm audit --audit-level=high",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run dead-code",
-    "quality": "npm run check && npm run test:coverage && npm run deps:graph && npm run deps:cycles && npm run audit",
+    "zero:check": "npm run typecheck && npm run lint && npm run format:check && npm run dead-code",
+    "zero:quality": "npm run zero:check && npm run test:coverage && npm run deps:graph && npm run deps:cycles && npm run audit",
+    "check": "npm run zero:check",
+    "quality": "npm run zero:quality",
     "prepare": "lefthook install"
   },
   "dependencies": {

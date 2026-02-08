@@ -54,6 +54,7 @@ describe("parseCliArgs", (): void => {
     expect(parsed.force).toBe(true);
     expect(parsed.runChecks).toBe(true);
     expect(parsed.install).toBe(false);
+    expect(parsed.wizard).toBe(false);
   });
 
   it("parses --apply alias", (): void => {
@@ -66,6 +67,19 @@ describe("parseCliArgs", (): void => {
 
     expect(parsed.yes).toBe(true);
     expect(parsed.runChecks).toBe(false);
+    expect(parsed.wizard).toBe(false);
+  });
+
+  it("parses --wizard for apply", (): void => {
+    const parsed = parseCliArgs(["apply", "--wizard", "--cwd", "./project"]);
+
+    expect(parsed.command).toBe("apply");
+    if (parsed.command !== "apply") {
+      throw new Error("Expected apply command");
+    }
+
+    expect(parsed.wizard).toBe(true);
+    expect(parsed.cwd).toBe("./project");
   });
 
   it("throws on unknown flags", (): void => {

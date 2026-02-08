@@ -1,9 +1,29 @@
+import { readFileSync } from "node:fs";
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import validatePackageName from "validate-npm-package-name";
 
 export const TEMPLATE_TOKEN_PROJECT_NAME = "__PROJECT_NAME__";
+export const TEMPLATE_TOKEN_ZERO_TS_VERSION = "__ZERO_TS_VERSION__";
+
+const resolveZeroTsVersion = (): string => {
+  try {
+    const packageJsonPath = path.resolve(import.meta.dirname, "../package.json");
+    const packageJsonRaw = readFileSync(packageJsonPath, "utf8");
+    const packageJson = JSON.parse(packageJsonRaw) as { version?: unknown };
+
+    if (typeof packageJson.version === "string" && packageJson.version.length > 0) {
+      return packageJson.version;
+    }
+  } catch {
+    // Fallback for non-standard runtimes.
+  }
+
+  return "0.0.0";
+};
+
+export const ZERO_TS_VERSION = resolveZeroTsVersion();
 
 export const sanitizePackageName = (input: string): string =>
   input
@@ -57,8 +77,14 @@ export const ensureTargetDirectory = async (
   await mkdir(targetDirectoryPath, { recursive: true });
 };
 
-export const renderTemplateContent = (source: string, projectName: string): string =>
-  source.replaceAll(TEMPLATE_TOKEN_PROJECT_NAME, projectName);
+export const renderTemplateContent = (
+  source: string,
+  projectName: string,
+  zeroTsVersion: string = ZERO_TS_VERSION,
+): string =>
+  source
+    .replaceAll(TEMPLATE_TOKEN_PROJECT_NAME, projectName)
+    .replaceAll(TEMPLATE_TOKEN_ZERO_TS_VERSION, zeroTsVersion);
 
 const replaceTemplateTokens = async (filePath: string, projectName: string): Promise<void> => {
   const source = await readFile(filePath, "utf8");

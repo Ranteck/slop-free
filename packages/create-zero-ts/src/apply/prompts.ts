@@ -12,25 +12,19 @@ export const promptFileConflictResolution = async (
   relativePath: string,
   existingContent: string,
   incomingContent: string,
-  yes: boolean,
-  force: boolean,
 ): Promise<ConflictResolution> => {
-  if (force || yes) {
-    return "overwrite";
-  }
-
   while (true) {
     const decision = await select({
       message: `File ${relativePath} already exists. What should apply do?`,
-      initialValue: "overwrite",
+      initialValue: "skip",
       options: [
         {
-          label: "Overwrite (recommended)",
-          value: "overwrite",
+          label: "Skip (safe)",
+          value: "skip",
         },
         {
-          label: "Skip",
-          value: "skip",
+          label: "Overwrite",
+          value: "overwrite",
         },
         {
           label: "View diff preview",
