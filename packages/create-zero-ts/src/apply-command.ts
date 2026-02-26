@@ -17,7 +17,7 @@ type ConflictPolicy = "review" | "skip" | "overwrite";
 const INSTALLER_TOTAL_STEPS = 5;
 
 const installerStepTitle = (step: number, title: string): string =>
-  `[${step}/${INSTALLER_TOTAL_STEPS}] ${title}`;
+  `[${String(step)}/${String(INSTALLER_TOTAL_STEPS)}] ${title}`;
 
 const targetExists = async (targetPath: string): Promise<boolean> =>
   stat(targetPath).then(() => true).catch(() => false);
@@ -168,11 +168,11 @@ const resolveProceedDecision = async (
 const summarizePlan = (plan: ReturnType<typeof buildApplyPlan>): readonly string[] => {
   const summary = [
     `Project name: ${plan.projectName}`,
-    `Files to create: ${plan.filesToCreate.length}`,
-    `Files with conflicts: ${plan.conflictingFiles.length}`,
+    `Files to create: ${String(plan.filesToCreate.length)}`,
+    `Files with conflicts: ${String(plan.conflictingFiles.length)}`,
     `Package.json changed: ${plan.packageJsonPlan.summary.changed ? "yes" : "no"}`,
-    `Dependencies to add: ${plan.packageJsonPlan.summary.addedDependencies.length}`,
-    `Dev dependencies to add: ${plan.packageJsonPlan.summary.addedDevDependencies.length}`,
+    `Dependencies to add: ${String(plan.packageJsonPlan.summary.addedDependencies.length)}`,
+    `Dev dependencies to add: ${String(plan.packageJsonPlan.summary.addedDevDependencies.length)}`,
   ];
 
   return summary;
@@ -185,16 +185,16 @@ const summarizeConflicts = (plan: ReturnType<typeof buildApplyPlan>): readonly s
 
   const preview = plan.conflictingFiles.slice(0, 8).map((managedFile) => managedFile.relativePath);
   if (plan.conflictingFiles.length > preview.length) {
-    preview.push(`...and ${plan.conflictingFiles.length - preview.length} more`);
+    preview.push(`...and ${String(plan.conflictingFiles.length - preview.length)} more`);
   }
 
   return preview;
 };
 
 const summarizeResult = (result: Awaited<ReturnType<typeof executeApplyPlan>>): readonly string[] => [
-  `Created files: ${result.createdFiles.length}`,
-  `Overwritten files: ${result.overwrittenFiles.length}`,
-  `Skipped files: ${result.skippedFiles.length}`,
+  `Created files: ${String(result.createdFiles.length)}`,
+  `Overwritten files: ${String(result.overwrittenFiles.length)}`,
+  `Skipped files: ${String(result.skippedFiles.length)}`,
   `package.json updated: ${result.packageJsonUpdated ? "yes" : "no"}`,
   `Install ran: ${result.installRan ? "yes" : "no"}`,
   `Checks ran: ${result.checksRan.length > 0 ? result.checksRan.join(", ") : "none"}`,

@@ -93,7 +93,7 @@ export const executeApplyPlan = async (
   emitProgress(
     options,
     "creating_files",
-    `Creating ${plan.filesToCreate.length} new managed file(s).`,
+    `Creating ${String(plan.filesToCreate.length)} new managed file(s).`,
   );
 
   for (const managedFile of plan.filesToCreate) {
@@ -109,7 +109,7 @@ export const executeApplyPlan = async (
   emitProgress(
     options,
     "resolving_conflicts",
-    `Resolving ${plan.conflictingFiles.length} conflicting managed file(s).`,
+    `Resolving ${String(plan.conflictingFiles.length)} conflicting managed file(s).`,
   );
 
   for (const managedFile of plan.conflictingFiles) {

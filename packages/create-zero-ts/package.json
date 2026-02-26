@@ -32,7 +32,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@types/cross-spawn": "^6.0.6",
     "@types/node": "^22.13.10",
+    "@types/validate-npm-package-name": "^4.0.2",
     "eslint": "^9.22.0",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",

@@ -14,18 +14,23 @@ const parsePackageManager = (value: string): PackageManager => {
   throw new Error(`Unsupported package manager: ${value}`);
 };
 
-interface MutableCreateOptions extends Omit<CreateCliOptions, "command" | "yes" | "skipGit"> {
+interface MutableCreateOptions {
+  projectName: string | undefined;
+  targetDir: string | undefined;
+  packageManager: PackageManager | undefined;
+  install: boolean | undefined;
   yes: boolean;
   skipGit: boolean;
 }
 
-interface MutableApplyOptions extends Omit<
-  ApplyCliOptions,
-  "command" | "yes" | "wizard" | "dryRun" | "backup" | "force"
-> {
+interface MutableApplyOptions {
+  cwd: string | undefined;
+  packageManager: PackageManager | undefined;
+  install: boolean | undefined;
   yes: boolean;
   wizard: boolean;
   dryRun: boolean;
+  runChecks: boolean | undefined;
   backup: boolean;
   force: boolean;
 }
@@ -47,9 +52,7 @@ const parseCreateOptions = (argv: readonly string[]): CreateCliOptions => {
     }
 
     if (!token.startsWith("-")) {
-      if (options.projectName === undefined) {
-        options.projectName = token;
-      }
+      options.projectName ??= token;
       continue;
     }
 

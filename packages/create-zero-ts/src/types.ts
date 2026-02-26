@@ -6,24 +6,24 @@ export type CliCommand = "create" | "apply";
 
 interface BaseCliOptions {
   readonly command: CliCommand;
-  readonly packageManager?: PackageManager;
-  readonly install?: boolean;
+  readonly packageManager?: PackageManager | undefined;
+  readonly install?: boolean | undefined;
   readonly yes: boolean;
 }
 
 export interface CreateCliOptions extends BaseCliOptions {
   readonly command: "create";
-  readonly projectName?: string;
-  readonly targetDir?: string;
+  readonly projectName?: string | undefined;
+  readonly targetDir?: string | undefined;
   readonly skipGit: boolean;
 }
 
 export interface ApplyCliOptions extends BaseCliOptions {
   readonly command: "apply";
-  readonly cwd?: string;
+  readonly cwd?: string | undefined;
   readonly wizard: boolean;
   readonly dryRun: boolean;
-  readonly runChecks?: boolean;
+  readonly runChecks?: boolean | undefined;
   readonly backup: boolean;
   readonly force: boolean;
 }

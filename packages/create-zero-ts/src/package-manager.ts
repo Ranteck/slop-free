@@ -50,7 +50,7 @@ export const installCommand = (packageManager: PackageManager): readonly string[
       return ["install"];
     default: {
       const unknownManager: never = packageManager;
-      throw new Error(`Unsupported package manager: ${unknownManager}`);
+      throw new Error(`Unsupported package manager: ${String(unknownManager)}`);
     }
   }
 };
@@ -70,7 +70,7 @@ export const runScriptCommand = (
       return ["run", script];
     default: {
       const unknownManager: never = packageManager;
-      throw new Error(`Unsupported package manager: ${unknownManager}`);
+      throw new Error(`Unsupported package manager: ${String(unknownManager)}`);
     }
   }
 };

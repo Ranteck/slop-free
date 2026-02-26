@@ -34,7 +34,7 @@ export const sanitizePackageName = (input: string): string =>
 
 export const assertValidPackageName = (packageName: string): void => {
   const validation = validatePackageName(packageName);
-  if (validation.validForNewPackages !== true) {
+  if (!validation.validForNewPackages) {
     const errors = [
       ...(validation.errors ?? []),
       ...(validation.warnings ?? []),
