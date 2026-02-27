@@ -1,10 +1,12 @@
 import {
   PACKAGE_MANAGERS,
+  QUALITY_PROFILES,
   type ApplyCliOptions,
   type CliOptions,
   type CreateCliOptions,
   type DoctorCliOptions,
   type PackageManager,
+  type QualityProfile,
 } from "./types.js";
 
 const parsePackageManager = (value: string): PackageManager => {
@@ -15,10 +17,19 @@ const parsePackageManager = (value: string): PackageManager => {
   throw new Error(`Unsupported package manager: ${value}`);
 };
 
+const parseQualityProfile = (value: string): QualityProfile => {
+  if (QUALITY_PROFILES.includes(value as QualityProfile)) {
+    return value as QualityProfile;
+  }
+
+  throw new Error(`Unsupported quality profile: ${value}`);
+};
+
 interface MutableCreateOptions {
   projectName: string | undefined;
   targetDir: string | undefined;
   packageManager: PackageManager | undefined;
+  profile: QualityProfile | undefined;
   install: boolean | undefined;
   yes: boolean;
   skipGit: boolean;
@@ -27,6 +38,7 @@ interface MutableCreateOptions {
 interface MutableApplyOptions {
   cwd: string | undefined;
   packageManager: PackageManager | undefined;
+  profile: QualityProfile | undefined;
   install: boolean | undefined;
   yes: boolean;
   wizard: boolean;
@@ -41,6 +53,7 @@ const parseCreateOptions = (argv: readonly string[]): CreateCliOptions => {
     projectName: undefined,
     targetDir: undefined,
     packageManager: undefined,
+    profile: undefined,
     install: undefined,
     yes: false,
     skipGit: false,
@@ -87,8 +100,19 @@ const parseCreateOptions = (argv: readonly string[]): CreateCliOptions => {
       continue;
     }
 
+    if (token.startsWith("--profile=")) {
+      options.profile = parseQualityProfile(token.split("=")[1] ?? "");
+      continue;
+    }
+
     if (token === "--pm" || token === "-p") {
       options.packageManager = parsePackageManager(argv[index + 1] ?? "");
+      index += 1;
+      continue;
+    }
+
+    if (token === "--profile") {
+      options.profile = parseQualityProfile(argv[index + 1] ?? "");
       index += 1;
       continue;
     }
@@ -116,6 +140,7 @@ const parseCreateOptions = (argv: readonly string[]): CreateCliOptions => {
     projectName: options.projectName,
     targetDir: options.targetDir,
     packageManager: options.packageManager,
+    profile: options.profile,
     install: options.install,
     yes: options.yes,
     skipGit: options.skipGit,
@@ -126,6 +151,7 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
   const options: MutableApplyOptions = {
     cwd: undefined,
     packageManager: undefined,
+    profile: undefined,
     install: undefined,
     yes: false,
     wizard: false,
@@ -195,8 +221,19 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
       continue;
     }
 
+    if (token.startsWith("--profile=")) {
+      options.profile = parseQualityProfile(token.split("=")[1] ?? "");
+      continue;
+    }
+
     if (token === "--pm" || token === "-p") {
       options.packageManager = parsePackageManager(argv[index + 1] ?? "");
+      index += 1;
+      continue;
+    }
+
+    if (token === "--profile") {
+      options.profile = parseQualityProfile(argv[index + 1] ?? "");
       index += 1;
       continue;
     }
@@ -219,6 +256,7 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
     command: "apply",
     cwd: options.cwd,
     packageManager: options.packageManager,
+    profile: options.profile,
     install: options.install,
     yes: options.yes,
     wizard: options.wizard,

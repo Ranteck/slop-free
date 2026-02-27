@@ -3,6 +3,7 @@ import path from "node:path";
 import { MANAGED_TEMPLATE_FILES } from "./constants.js";
 import { fileExists, readTextIfExists } from "./io.js";
 import type { ManagedFile, PackageJsonLike } from "./types.js";
+import type { QualityProfile } from "../types.js";
 import { renderTemplateContent, sanitizePackageName } from "../template.js";
 
 export interface ApplyDetection {
@@ -29,6 +30,7 @@ export const readJsonIfExists = async <T>(filePath: string): Promise<T | undefin
 export const detectApplyInput = async (
   targetDir: string,
   templateDir: string,
+  qualityProfile: QualityProfile,
 ): Promise<ApplyDetection> => {
   const packageJsonPath = path.join(targetDir, "package.json");
   const targetPackageJson = await readJsonIfExists<PackageJsonLike>(packageJsonPath);
@@ -42,14 +44,24 @@ export const detectApplyInput = async (
   const templatePackageJsonPath = path.join(templateDir, "package.json");
   const templatePackageJsonRaw = await readJson<PackageJsonLike>(templatePackageJsonPath);
   const templatePackageJson: PackageJsonLike = JSON.parse(
-    renderTemplateContent(JSON.stringify(templatePackageJsonRaw), projectName),
+    renderTemplateContent(
+      JSON.stringify(templatePackageJsonRaw),
+      projectName,
+      undefined,
+      qualityProfile,
+    ),
   ) as PackageJsonLike;
 
   const managedFiles = await Promise.all(
     MANAGED_TEMPLATE_FILES.map(async (managedTemplateFile): Promise<ManagedFile> => {
       const sourceTemplatePath = path.join(templateDir, managedTemplateFile.sourceRelativePath);
       const sourceContent = await readFile(sourceTemplatePath, "utf8");
-      const renderedContent = renderTemplateContent(sourceContent, projectName);
+      const renderedContent = renderTemplateContent(
+        sourceContent,
+        projectName,
+        undefined,
+        qualityProfile,
+      );
       const targetPath = path.join(targetDir, managedTemplateFile.targetRelativePath);
       const existingContent = await readTextIfExists(targetPath);
 

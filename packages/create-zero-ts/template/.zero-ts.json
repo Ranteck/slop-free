@@ -1,4 +1,5 @@
 {
   "tool": "create-zero-ts",
-  "version": "__ZERO_TS_VERSION__"
+  "version": "__ZERO_TS_VERSION__",
+  "profile": "__ZERO_TS_PROFILE__"
 }

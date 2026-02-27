@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  TEMPLATE_TOKEN_ZERO_TS_FORM_RULE_LEVEL,
+  TEMPLATE_TOKEN_ZERO_TS_LINT_MAX_WARNINGS,
+  TEMPLATE_TOKEN_ZERO_TS_PROFILE,
   TEMPLATE_TOKEN_PROJECT_NAME,
   TEMPLATE_TOKEN_ZERO_TS_VERSION,
   assertValidPackageName,
@@ -28,10 +31,16 @@ describe("assertValidPackageName", (): void => {
 });
 
 describe("renderTemplateContent", (): void => {
-  it("replaces project and version tokens", (): void => {
-    const source = `${TEMPLATE_TOKEN_PROJECT_NAME}:${TEMPLATE_TOKEN_ZERO_TS_VERSION}`;
-    const result = renderTemplateContent(source, "demo-app", "1.2.3");
+  it("replaces project, version, and quality-profile tokens", (): void => {
+    const source = [
+      TEMPLATE_TOKEN_PROJECT_NAME,
+      TEMPLATE_TOKEN_ZERO_TS_VERSION,
+      TEMPLATE_TOKEN_ZERO_TS_PROFILE,
+      TEMPLATE_TOKEN_ZERO_TS_FORM_RULE_LEVEL,
+      TEMPLATE_TOKEN_ZERO_TS_LINT_MAX_WARNINGS,
+    ].join(":");
+    const result = renderTemplateContent(source, "demo-app", "1.2.3", "warm");
 
-    expect(result).toBe("demo-app:1.2.3");
+    expect(result).toBe("demo-app:1.2.3:warm:warn:999");
   });
 });

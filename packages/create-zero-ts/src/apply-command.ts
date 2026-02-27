@@ -7,8 +7,9 @@ import { executeApplyPlan } from "./apply/execute.js";
 import { buildApplyPlan } from "./apply/plan.js";
 import type { ApplyCliOptions } from "./types.js";
 import { detectPackageManager, packageManagerLabel } from "./package-manager.js";
+import { readQualityProfileFromManifest, resolveQualityProfile } from "./quality-profile.js";
 import { resolveTemplateDir } from "./template.js";
-import { PACKAGE_MANAGERS, type PackageManager } from "./types.js";
+import { PACKAGE_MANAGERS, type PackageManager, type QualityProfile } from "./types.js";
 import { exitOnCancel, info, kv, section, success, warn } from "./ui.js";
 import type { ApplyProgressEvent } from "./apply/types.js";
 
@@ -37,6 +38,35 @@ const choosePackageManager = async (
       value: packageManager,
       label: packageManagerLabel(packageManager),
     })),
+  });
+
+  return exitOnCancel(selected);
+};
+
+const qualityProfileLabel = (profile: QualityProfile): string =>
+  profile === "warm" ? "Warm" : "Strict";
+
+const chooseQualityProfile = async (
+  initialValue: QualityProfile,
+  skipPrompts: boolean,
+): Promise<QualityProfile> => {
+  if (skipPrompts) {
+    return initialValue;
+  }
+
+  const selected = await select({
+    message: "Choose quality profile",
+    initialValue,
+    options: [
+      {
+        value: "warm",
+        label: "Warm (preserve strict type/security, relax style)",
+      },
+      {
+        value: "strict",
+        label: "Strict (full enforcement)",
+      },
+    ],
   });
 
   return exitOnCancel(selected);
@@ -234,13 +264,26 @@ export const runApplyCommand = async (options: ApplyCliOptions): Promise<readonl
   info(`Target directory: ${targetDir}`);
   info(`Mode: ${interactiveWizard ? "interactive wizard" : "non-interactive"}`);
 
+  const manifestProfile = await readQualityProfileFromManifest(targetDir);
+  const defaultProfile = resolveQualityProfile({
+    command: "apply",
+    explicitProfile: options.profile,
+    wizardProfile: undefined,
+    manifestProfile,
+  });
+  const qualityProfile = await chooseQualityProfile(
+    defaultProfile,
+    skipPrompts || options.profile !== undefined,
+  );
+  kv("Quality profile", qualityProfileLabel(qualityProfile));
+
   const packageManager = await choosePackageManager(
     options.packageManager ?? detectPackageManager(targetDir),
     skipPrompts || options.packageManager !== undefined,
   );
   kv("Package manager", packageManagerLabel(packageManager));
 
-  const detection = await detectApplyInput(targetDir, resolveTemplateDir());
+  const detection = await detectApplyInput(targetDir, resolveTemplateDir(), qualityProfile);
   const plan = buildApplyPlan(targetDir, detection);
   const hasConflicts = plan.conflictingFiles.length > 0 || plan.packageJsonPlan.summary.changed;
 
@@ -298,6 +341,7 @@ export const runApplyCommand = async (options: ApplyCliOptions): Promise<readonl
     ...summarizePlan(plan).map((line) => `  - ${line}`),
     "Installer choices:",
     `  - Wizard mode: ${interactiveWizard ? "interactive" : "non-interactive"}`,
+    `  - Quality profile: ${qualityProfileLabel(qualityProfile)}`,
     `  - Conflict policy: ${conflictPolicy}`,
     `  - Backups enabled: ${backup ? "yes" : "no"}`,
     `  - Install dependencies: ${shouldInstall ? "yes" : "no"}`,

@@ -34,12 +34,22 @@ create-zero-ts doctor            # check node/pm/write access/git state
 `up`/`apply` are interactive by default.  
 Use `-C <dir>` if you want to target a specific project folder.
 
+Quality profiles:
+- `strict`: full enforcement from start (default for `create`)
+- `warm`: strict type/security + relaxed style severity (default for `up`/`apply`)
+
 ## Common Examples
 
 Interactive apply with backups (recommended):
 
 ```bash
 npx create-zero-ts up -w -b -C ./my-project
+```
+
+Apply using warm profile explicitly:
+
+```bash
+npx create-zero-ts up --profile warm -w -b -C ./my-project
 ```
 
 Dry-run apply (no file writes):
@@ -52,6 +62,12 @@ Create without install:
 
 ```bash
 npx create-zero-ts create my-app -y -n
+```
+
+Create with strict profile explicitly:
+
+```bash
+npx create-zero-ts create my-app --profile strict -y -n
 ```
 
 ## After `create` or `up`
@@ -90,6 +106,7 @@ Common:
 - `-i` = `--install`
 - `-n` = `--no-install`
 - `-g` = `--skip-git`
+- `--profile <warm|strict>` = quality profile
 
 `up`/`apply`:
 
@@ -101,6 +118,7 @@ Common:
 - `-k` = `--no-check`
 - `-i` = `--install`
 - `-n` = `--no-install`
+- `--profile <warm|strict>` = quality profile
 
 ## What Happens During `up`
 

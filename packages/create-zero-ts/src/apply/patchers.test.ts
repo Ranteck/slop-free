@@ -60,4 +60,43 @@ describe("buildPackageJsonPlan", (): void => {
     expect(plan.next.scripts?.prepare).toBe("husky install && lefthook install");
     expect(plan.summary.updatedPrepareScript).toBe(true);
   });
+
+  it("updates managed lint scripts when switching between warm and strict", (): void => {
+    const current: PackageJsonLike = {
+      scripts: {
+        lint: "eslint . --max-warnings 0",
+        "lint:fix": "eslint . --fix --max-warnings 0",
+      },
+    };
+    const template: PackageJsonLike = {
+      scripts: {
+        lint: "eslint . --max-warnings 999",
+        "lint:fix": "eslint . --fix --max-warnings 999",
+      },
+    };
+
+    const plan = buildPackageJsonPlan("package.json", current, template, "demo");
+
+    expect(plan.next.scripts?.lint).toBe("eslint . --max-warnings 999");
+    expect(plan.next.scripts?.["lint:fix"]).toBe("eslint . --fix --max-warnings 999");
+    expect(plan.summary.updatedScripts).toEqual(["lint", "lint:fix"]);
+  });
+
+  it("does not overwrite custom lint scripts", (): void => {
+    const current: PackageJsonLike = {
+      scripts: {
+        lint: "eslint src --max-warnings 0",
+      },
+    };
+    const template: PackageJsonLike = {
+      scripts: {
+        lint: "eslint . --max-warnings 999",
+      },
+    };
+
+    const plan = buildPackageJsonPlan("package.json", current, template, "demo");
+
+    expect(plan.next.scripts?.lint).toBe("eslint src --max-warnings 0");
+    expect(plan.summary.updatedScripts).toEqual([]);
+  });
 });

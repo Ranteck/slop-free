@@ -3,9 +3,13 @@ import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import validatePackageName from "validate-npm-package-name";
+import type { QualityProfile } from "./types.js";
 
 export const TEMPLATE_TOKEN_PROJECT_NAME = "__PROJECT_NAME__";
 export const TEMPLATE_TOKEN_ZERO_TS_VERSION = "__ZERO_TS_VERSION__";
+export const TEMPLATE_TOKEN_ZERO_TS_PROFILE = "__ZERO_TS_PROFILE__";
+export const TEMPLATE_TOKEN_ZERO_TS_FORM_RULE_LEVEL = "__ZERO_TS_FORM_RULE_LEVEL__";
+export const TEMPLATE_TOKEN_ZERO_TS_LINT_MAX_WARNINGS = "__ZERO_TS_LINT_MAX_WARNINGS__";
 
 const resolveZeroTsVersion = (): string => {
   try {
@@ -81,14 +85,28 @@ export const renderTemplateContent = (
   source: string,
   projectName: string,
   zeroTsVersion: string = ZERO_TS_VERSION,
+  qualityProfile: QualityProfile = "strict",
 ): string =>
   source
     .replaceAll(TEMPLATE_TOKEN_PROJECT_NAME, projectName)
-    .replaceAll(TEMPLATE_TOKEN_ZERO_TS_VERSION, zeroTsVersion);
+    .replaceAll(TEMPLATE_TOKEN_ZERO_TS_VERSION, zeroTsVersion)
+    .replaceAll(TEMPLATE_TOKEN_ZERO_TS_PROFILE, qualityProfile)
+    .replaceAll(
+      TEMPLATE_TOKEN_ZERO_TS_FORM_RULE_LEVEL,
+      qualityProfile === "warm" ? "warn" : "error",
+    )
+    .replaceAll(
+      TEMPLATE_TOKEN_ZERO_TS_LINT_MAX_WARNINGS,
+      qualityProfile === "warm" ? "999" : "0",
+    );
 
-const replaceTemplateTokens = async (filePath: string, projectName: string): Promise<void> => {
+const replaceTemplateTokens = async (
+  filePath: string,
+  projectName: string,
+  qualityProfile: QualityProfile,
+): Promise<void> => {
   const source = await readFile(filePath, "utf8");
-  const output = renderTemplateContent(source, projectName);
+  const output = renderTemplateContent(source, projectName, ZERO_TS_VERSION, qualityProfile);
   if (source !== output) {
     await writeFile(filePath, output, "utf8");
   }
@@ -114,11 +132,16 @@ export const copyAndRenderTemplate = async (
   templateDir: string,
   targetDir: string,
   projectName: string,
+  qualityProfile: QualityProfile,
 ): Promise<void> => {
   await cp(templateDir, targetDir, { recursive: true });
 
   const files = await walkFiles(targetDir);
-  await Promise.all(files.map(async (filePath): Promise<void> => replaceTemplateTokens(filePath, projectName)));
+  await Promise.all(
+    files.map(
+      async (filePath): Promise<void> => replaceTemplateTokens(filePath, projectName, qualityProfile),
+    ),
+  );
 
   const gitIgnorePath = path.join(targetDir, "gitignore");
   const dotGitIgnorePath = path.join(targetDir, ".gitignore");

@@ -1,6 +1,8 @@
 export const PACKAGE_MANAGERS = ["npm", "pnpm", "yarn", "bun"] as const;
+export const QUALITY_PROFILES = ["warm", "strict"] as const;
 
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
+export type QualityProfile = (typeof QUALITY_PROFILES)[number];
 
 export type CliCommand = "create" | "apply" | "doctor";
 
@@ -16,6 +18,7 @@ export interface CreateCliOptions extends BaseCliOptions {
   readonly projectName?: string | undefined;
   readonly targetDir?: string | undefined;
   readonly skipGit: boolean;
+  readonly profile?: QualityProfile | undefined;
 }
 
 export interface ApplyCliOptions extends BaseCliOptions {
@@ -26,6 +29,7 @@ export interface ApplyCliOptions extends BaseCliOptions {
   readonly runChecks?: boolean | undefined;
   readonly backup: boolean;
   readonly force: boolean;
+  readonly profile?: QualityProfile | undefined;
 }
 
 export interface DoctorCliOptions {

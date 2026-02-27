@@ -9,8 +9,8 @@
   "scripts": {
     "build": "tsc --noEmit && tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix --max-warnings 0",
+    "lint": "eslint . --max-warnings __ZERO_TS_LINT_MAX_WARNINGS__",
+    "lint:fix": "eslint . --fix --max-warnings __ZERO_TS_LINT_MAX_WARNINGS__",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

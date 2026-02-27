@@ -9,6 +9,7 @@ import {
   runScriptCommand,
 } from "./package-manager.js";
 import { runCommand } from "./process.js";
+import { defaultQualityProfile } from "./quality-profile.js";
 import {
   assertValidPackageName,
   copyAndRenderTemplate,
@@ -16,8 +17,8 @@ import {
   resolveTemplateDir,
   sanitizePackageName,
 } from "./template.js";
-import type { CreateCliOptions, PackageManager } from "./types.js";
-import { PACKAGE_MANAGERS } from "./types.js";
+import type { CreateCliOptions, PackageManager, QualityProfile } from "./types.js";
+import { PACKAGE_MANAGERS, QUALITY_PROFILES } from "./types.js";
 import { exitOnCancel } from "./ui.js";
 
 const directoryHasContent = async (directoryPath: string): Promise<boolean> => {
@@ -44,6 +45,29 @@ const choosePackageManager = async (
     options: PACKAGE_MANAGERS.map((packageManager) => ({
       value: packageManager,
       label: packageManagerLabel(packageManager),
+    })),
+  });
+
+  return exitOnCancel(selected);
+};
+
+const qualityProfileLabel = (profile: QualityProfile): string =>
+  profile === "warm" ? "Warm" : "Strict";
+
+const chooseQualityProfile = async (
+  initialValue: QualityProfile,
+  skipPrompts: boolean,
+): Promise<QualityProfile> => {
+  if (skipPrompts) {
+    return initialValue;
+  }
+
+  const selected = await select({
+    message: "Choose quality profile",
+    initialValue,
+    options: QUALITY_PROFILES.map((profile) => ({
+      value: profile,
+      label: profile === "warm" ? "Warm (faster adoption)" : "Strict (full enforcement)",
     })),
   });
 
@@ -92,6 +116,10 @@ const resolveProjectName = async (inputName: string | undefined, yes: boolean): 
 
 export const runCreateCommand = async (options: CreateCliOptions): Promise<readonly string[]> => {
   const detectedPackageManager = detectPackageManager(process.cwd());
+  const qualityProfile = await chooseQualityProfile(
+    options.profile ?? defaultQualityProfile("create"),
+    options.yes || options.profile !== undefined,
+  );
   const rawProjectName = await resolveProjectName(options.projectName, options.yes);
   const targetDir = path.resolve(process.cwd(), options.targetDir ?? rawProjectName);
   const packageName = sanitizePackageName(path.basename(targetDir));
@@ -117,7 +145,7 @@ export const runCreateCommand = async (options: CreateCliOptions): Promise<reado
   })();
 
   await ensureTargetDirectory(targetDir, shouldOverwrite);
-  await copyAndRenderTemplate(resolveTemplateDir(), targetDir, packageName);
+  await copyAndRenderTemplate(resolveTemplateDir(), targetDir, packageName, qualityProfile);
 
   const packageManager = await choosePackageManager(
     options.packageManager ?? detectedPackageManager,
@@ -138,6 +166,7 @@ export const runCreateCommand = async (options: CreateCliOptions): Promise<reado
 
   return [
     `Project created in ${targetDir}`,
+    `Quality profile: ${qualityProfileLabel(qualityProfile)}`,
     "",
     "Next steps:",
     `  cd ${path.relative(process.cwd(), targetDir) || "."}`,

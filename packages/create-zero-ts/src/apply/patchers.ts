@@ -21,6 +21,11 @@ const KNOWN_SCRIPT_KEYS: readonly string[] = [
   "prepare",
 ];
 
+const MANAGED_SCRIPT_VARIANTS: Readonly<Record<"lint" | "lint:fix", readonly string[]>> = {
+  lint: ["eslint . --max-warnings 0", "eslint . --max-warnings 999"],
+  "lint:fix": ["eslint . --fix --max-warnings 0", "eslint . --fix --max-warnings 999"],
+};
+
 const clonePackageJson = (value: PackageJsonLike | undefined): PackageJsonLike =>
   value === undefined ? {} : JSON.parse(JSON.stringify(value)) as PackageJsonLike;
 
@@ -37,6 +42,22 @@ const mergePrepareScript = (existingValue: string | undefined, templateValue: st
   }
 
   return `${existingValue} && lefthook install`;
+};
+
+const shouldRefreshManagedScript = (
+  key: string,
+  previous: string,
+  templateValue: string,
+): boolean => {
+  if (previous === templateValue) {
+    return false;
+  }
+
+  if (key === "lint" || key === "lint:fix") {
+    return MANAGED_SCRIPT_VARIANTS[key].includes(previous);
+  }
+
+  return false;
 };
 
 const mergeScripts = (
@@ -78,6 +99,9 @@ const mergeScripts = (
     if (previous === undefined) {
       baseScripts[key] = templateValue;
       addedScripts.push(key);
+    } else if (shouldRefreshManagedScript(key, previous, templateValue)) {
+      baseScripts[key] = templateValue;
+      updatedScripts.push(key);
     }
   }
 

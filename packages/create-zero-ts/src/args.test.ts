@@ -3,7 +3,15 @@ import { parseCliArgs } from "./args.js";
 
 describe("parseCliArgs", (): void => {
   it("parses create flags and positional project name", (): void => {
-    const parsed = parseCliArgs(["demo-app", "--pm", "pnpm", "--install", "--yes"]);
+    const parsed = parseCliArgs([
+      "demo-app",
+      "--pm",
+      "pnpm",
+      "--profile",
+      "warm",
+      "--install",
+      "--yes",
+    ]);
 
     expect(parsed.command).toBe("create");
     if (parsed.command !== "create") {
@@ -12,12 +20,13 @@ describe("parseCliArgs", (): void => {
 
     expect(parsed.projectName).toBe("demo-app");
     expect(parsed.packageManager).toBe("pnpm");
+    expect(parsed.profile).toBe("warm");
     expect(parsed.install).toBe(true);
     expect(parsed.yes).toBe(true);
   });
 
   it("parses assignment-style create flags", (): void => {
-    const parsed = parseCliArgs(["--pm=npm", "--dir=./tmp/demo", "--no-install"]);
+    const parsed = parseCliArgs(["--pm=npm", "--profile=strict", "--dir=./tmp/demo", "--no-install"]);
 
     expect(parsed.command).toBe("create");
     if (parsed.command !== "create") {
@@ -25,6 +34,7 @@ describe("parseCliArgs", (): void => {
     }
 
     expect(parsed.packageManager).toBe("npm");
+    expect(parsed.profile).toBe("strict");
     expect(parsed.targetDir).toBe("./tmp/demo");
     expect(parsed.install).toBe(false);
   });
@@ -54,6 +64,7 @@ describe("parseCliArgs", (): void => {
       "--backup",
       "--force",
       "--check",
+      "--profile=warm",
       "--no-install",
     ]);
 
@@ -68,12 +79,27 @@ describe("parseCliArgs", (): void => {
     expect(parsed.backup).toBe(true);
     expect(parsed.force).toBe(true);
     expect(parsed.runChecks).toBe(true);
+    expect(parsed.profile).toBe("warm");
     expect(parsed.install).toBe(false);
     expect(parsed.wizard).toBe(false);
   });
 
   it("parses up alias and short apply flags", (): void => {
-    const parsed = parseCliArgs(["up", "-w", "-b", "-d", "-f", "-c", "-n", "-p", "npm", "-C", "."]);
+    const parsed = parseCliArgs([
+      "up",
+      "-w",
+      "-b",
+      "-d",
+      "-f",
+      "-c",
+      "-n",
+      "--profile",
+      "strict",
+      "-p",
+      "npm",
+      "-C",
+      ".",
+    ]);
 
     expect(parsed.command).toBe("apply");
     if (parsed.command !== "apply") {
@@ -86,6 +112,7 @@ describe("parseCliArgs", (): void => {
     expect(parsed.force).toBe(true);
     expect(parsed.runChecks).toBe(true);
     expect(parsed.install).toBe(false);
+    expect(parsed.profile).toBe("strict");
     expect(parsed.packageManager).toBe("npm");
     expect(parsed.cwd).toBe(".");
   });
@@ -149,5 +176,11 @@ describe("parseCliArgs", (): void => {
     expect((): void => {
       parseCliArgs(["--unknown"]);
     }).toThrowError("Unknown argument");
+  });
+
+  it("throws on unsupported profile values", (): void => {
+    expect((): void => {
+      parseCliArgs(["apply", "--profile", "invalid"]);
+    }).toThrowError("Unsupported quality profile");
   });
 });

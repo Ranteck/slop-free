@@ -104,25 +104,25 @@ export default tseslint.config(
       "eslint-comments/no-unused-disable": "error",
       "eslint-comments/require-description": "error",
       "complexity": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         {
           max: 10
         }
       ],
       "max-depth": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         {
           max: 3
         }
       ],
       "max-params": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         {
           max: 4
         }
       ],
       "perfectionist/sort-imports": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         {
           type: "natural",
           order: "asc",
@@ -137,23 +137,23 @@ export default tseslint.config(
           ]
         }
       ],
-      "no-console": "error",
-      "no-debugger": "error",
-      "no-alert": "error",
-      "no-var": "error",
-      "prefer-const": "error",
+      "no-console": "__ZERO_TS_FORM_RULE_LEVEL__",
+      "no-debugger": "__ZERO_TS_FORM_RULE_LEVEL__",
+      "no-alert": "__ZERO_TS_FORM_RULE_LEVEL__",
+      "no-var": "__ZERO_TS_FORM_RULE_LEVEL__",
+      "prefer-const": "__ZERO_TS_FORM_RULE_LEVEL__",
       "eqeqeq": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         "always"
       ],
       "curly": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         "all"
       ],
       "unicorn/prevent-abbreviations": "off",
       "unicorn/no-null": "off",
       "unicorn/filename-case": [
-        "error",
+        "__ZERO_TS_FORM_RULE_LEVEL__",
         {
           case: "kebabCase"
         }
