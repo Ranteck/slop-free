@@ -1,173 +1,77 @@
 # zero-ts
 
-`zero-ts` helps you create or upgrade TypeScript projects with strict, production-focused defaults.
+`zero-ts` creates or upgrades TypeScript projects with strong defaults.
 
-## Start Here
+## 30-Second Start
 
-If you want a new project:
+| I want to... | Run |
+| --- | --- |
+| Create a new project | `npx create-zero-ts create my-app` |
+| Upgrade an existing project | `npx create-zero-ts up` |
+| Check local environment | `npx create-zero-ts doctor` |
+
+Requirements: Node `>=22` and any of `npm`, `pnpm`, `yarn`, `bun`.
+
+## Pick a Profile
+
+| Profile | Best for | Behavior |
+| --- | --- | --- |
+| `strict` | New projects | Full enforcement from start |
+| `warm` | Existing codebases | Keeps type/security strict, relaxes style severity |
+
+Defaults:
+- `create` -> `strict`
+- `up`/`apply` -> `warm`
+
+Override anytime:
 
 ```bash
-npx create-zero-ts create my-app
+npx create-zero-ts up --profile warm
+npx create-zero-ts create my-app --profile strict
 ```
 
-If you want to upgrade an existing project:
+## 3 Steps After `create` or `up`
 
 ```bash
-npx create-zero-ts up
-```
-
-If you want a quick environment check:
-
-```bash
-npx create-zero-ts doctor
-```
-
-## Most Useful Commands
-
-```bash
-create-zero-ts create <name>     # scaffold a new project
-create-zero-ts up                # apply template to current project
-create-zero-ts apply             # same as up
-create-zero-ts doctor            # check node/pm/write access/git state
-```
-
-`up`/`apply` are interactive by default.  
-Use `-C <dir>` if you want to target a specific project folder.
-
-Quality profiles:
-- `strict`: full enforcement from start (default for `create`)
-- `warm`: strict type/security + relaxed style severity (default for `up`/`apply`)
-
-## Common Examples
-
-Interactive apply with backups (recommended):
-
-```bash
-npx create-zero-ts up -w -b -C ./my-project
-```
-
-Apply using warm profile explicitly:
-
-```bash
-npx create-zero-ts up --profile warm -w -b -C ./my-project
-```
-
-Dry-run apply (no file writes):
-
-```bash
-npx create-zero-ts up -d -y -n -C ./my-project
-```
-
-Create without install:
-
-```bash
-npx create-zero-ts create my-app -y -n
-```
-
-Create with strict profile explicitly:
-
-```bash
-npx create-zero-ts create my-app --profile strict -y -n
-```
-
-## After `create` or `up`
-
-Inside your project, run:
-
-```bash
-cd <your-project>
 npm install
 npm run check
 npm run quality
 ```
 
-What these do:
+What they mean:
+- `check`: fast gate (typecheck + lint + core checks)
+- `quality`: full gate (`check` + coverage + dependency checks + audit)
 
-- `check`: fast validation (typecheck, lint, tests/format/dead-code depending on project scripts)
-- `quality`: full validation (coverage, dependency checks, audit, and other strict gates)
+## Command Map
 
-If you are unsure which scripts are available, list them with:
+| Command | Alias | What it does |
+| --- | --- | --- |
+| `create-zero-ts create <name>` | `zero-ts create <name>` | Scaffold a new project |
+| `create-zero-ts up` | `create-zero-ts apply` | Apply template updates to current project |
+| `create-zero-ts doctor` | `zero-ts doctor` | Validate node/pm/write access/git state |
 
-```bash
-npm run
-```
+`up`/`apply` are interactive by default. Use `-C <dir>` to target another folder.
 
-## Short Flags
+## Flags at a Glance
 
-Common:
+- Common: `-y`, `-p <pm>`, `-C <dir>`
+- `create`: `-d <dir>`, `-i`, `-n`, `-g`, `--profile <warm|strict>`
+- `up`/`apply`: `-w`, `-d`, `-b`, `-f`, `-c`, `-k`, `-i`, `-n`, `--profile <warm|strict>`
 
-- `-y` = `--yes`
-- `-p <pm>` = `--pm <pm>`
-- `-C <dir>` = `--cwd <dir>` (apply/doctor)
+## Merge Rules in `up`/`apply`
 
-`create`:
+| File type | Strategy |
+| --- | --- |
+| `*.json`, `*.jsonc` | Deep merge (keep yours, add missing template keys) |
+| `.gitignore`, `.npmrc`, `.npmignore`, `.dockerignore` | Line union |
+| `lefthook.yml` | Merge hook keys/commands; keep your collisions with conflict comments |
 
-- `-d <dir>` = `--dir <dir>`
-- `-i` = `--install`
-- `-n` = `--no-install`
-- `-g` = `--skip-git`
-- `--profile <warm|strict>` = quality profile
-
-`up`/`apply`:
-
-- `-w` = `--wizard`
-- `-d` = `--dry-run`
-- `-b` = `--backup`
-- `-f` = `--force`
-- `-c` = `--check`
-- `-k` = `--no-check`
-- `-i` = `--install`
-- `-n` = `--no-install`
-- `--profile <warm|strict>` = quality profile
-
-## What Happens During `up`
-
-The wizard shows a plan, then asks how to resolve conflicts:
-
-- `Skip`: keep your file
-- `Overwrite`: use template file
-- `View diff`: inspect before deciding
-- `Merge`: available for supported file types
-
-Current merge support:
-
-- `*.json`, `*.jsonc`: deep merge (keep existing values, add missing template keys)
-- `.gitignore`, `.npmrc`, `.npmignore`, `.dockerignore`: line union
-- `lefthook.yml`: merges hook commands and missing hook settings; on command collisions it keeps your value and appends YAML comment conflict markers for review
-
-## What zero-ts Adds
-
-- Strict TypeScript defaults
-- ESLint flat config with strict type safety rules
-- `zod`-based env validation pattern in `src/env.ts`
-- Quality scripts: `check`, `quality`, `zero:check`, `zero:quality`
-- Optional `.github/workflows/quality.yml`
-- `.zero-ts.json` manifest
-
-## For This Repository (Development)
-
-Package built here: `create-zero-ts`  
-Binary names: `create-zero-ts`, `zero-ts`
-
-Local dev:
+## Maintainers (This Repo)
 
 ```bash
 npm install
 npm run sync:template
 npm run check
 npm run build
-```
-
-Local smoke test without publishing:
-
-```bash
-node packages/create-zero-ts/dist/cli.js create demo-app -y -n
-node packages/create-zero-ts/dist/cli.js up -d -y -n -C ./demo-app
-node packages/create-zero-ts/dist/cli.js doctor -C .
-```
-
-Full release gate:
-
-```bash
 npm run release:check
 ```
