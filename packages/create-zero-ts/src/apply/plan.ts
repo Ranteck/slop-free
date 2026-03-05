@@ -4,7 +4,7 @@ import type { ApplyPlan } from "./types.js";
 import type { ApplyDetection } from "./detect.js";
 
 export const buildApplyPlan = (targetDir: string, detection: ApplyDetection): ApplyPlan => {
-  const filesToCreate = detection.managedFiles.filter((managedFile) => managedFile.exists === false);
+  const filesToCreate = detection.managedFiles.filter((managedFile) => !managedFile.exists);
   const conflictingFiles = detection.managedFiles.filter((managedFile) => managedFile.exists);
 
   const packageJsonPlan = buildPackageJsonPlan(

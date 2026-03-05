@@ -18,7 +18,11 @@ export const runPostApplyChecks = (
       continue;
     }
 
-    runCommand(packageManager, runScriptCommand(packageManager, script), targetDir, "inherit");
+    try {
+      runCommand(packageManager, runScriptCommand(packageManager, script), targetDir, "inherit");
+    } catch (error: unknown) {
+      throw new Error(`Check '${script}' failed`, { cause: error });
+    }
     executed.push(script);
   }
 

@@ -16,6 +16,10 @@ const PACKAGE_MANAGER_LABEL: Readonly<Record<PackageManager, string>> = {
   bun: "bun",
 };
 
+const assertUnreachablePackageManager = (packageManager: never): never => {
+  throw new Error(`Unsupported package manager: ${String(packageManager)}`);
+};
+
 export const detectPackageManager = (cwd: string): PackageManager => {
   for (const packageManager of PACKAGE_MANAGERS) {
     const lockFile = LOCK_FILE_BY_PM[packageManager];
@@ -49,8 +53,7 @@ export const installCommand = (packageManager: PackageManager): readonly string[
     case "bun":
       return ["install"];
     default: {
-      const unknownManager: never = packageManager;
-      throw new Error(`Unsupported package manager: ${unknownManager}`);
+      return assertUnreachablePackageManager(packageManager);
     }
   }
 };
@@ -69,8 +72,7 @@ export const runScriptCommand = (
     case "bun":
       return ["run", script];
     default: {
-      const unknownManager: never = packageManager;
-      throw new Error(`Unsupported package manager: ${unknownManager}`);
+      return assertUnreachablePackageManager(packageManager);
     }
   }
 };

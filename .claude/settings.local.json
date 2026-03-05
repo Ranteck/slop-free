@@ -1,7 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_serena_serena__list_dir"
+      "mcp__plugin_serena_serena__list_dir",
+      "Bash(npm run:*)",
+      "Bash(npm ls:*)",
+      "Bash(node:*)",
+      "Bash(xxd:*)",
+      "Bash(npm pack:*)",
+      "Bash(python3:*)",
+      "Bash(npm info:*)",
+      "Bash(npm audit:*)",
+      "WebSearch",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm view:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

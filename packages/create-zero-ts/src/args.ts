@@ -1,8 +1,6 @@
 import {
   PACKAGE_MANAGERS,
   type ApplyCliOptions,
-  type CliOptions,
-  type CreateCliOptions,
   type PackageManager,
 } from "./types.js";
 
@@ -14,109 +12,29 @@ const parsePackageManager = (value: string): PackageManager => {
   throw new Error(`Unsupported package manager: ${value}`);
 };
 
-interface MutableCreateOptions extends Omit<CreateCliOptions, "command" | "yes" | "skipGit"> {
-  yes: boolean;
-  skipGit: boolean;
-}
+const parseFlagValue = (flag: string, value: string | undefined): string => {
+  if (value === undefined || value.length === 0 || value.startsWith("-")) {
+    throw new Error(`Missing value for ${flag}`);
+  }
 
-interface MutableApplyOptions extends Omit<ApplyCliOptions, "command" | "yes" | "dryRun" | "backup" | "force"> {
+  return value;
+};
+
+interface MutableApplyOptions {
+  cwd?: string;
+  packageManager?: PackageManager;
+  install?: boolean;
+  runChecks?: boolean;
   yes: boolean;
   dryRun: boolean;
   backup: boolean;
   force: boolean;
 }
 
-const parseCreateOptions = (argv: readonly string[]): CreateCliOptions => {
-  const options: MutableCreateOptions = {
-    projectName: undefined,
-    targetDir: undefined,
-    packageManager: undefined,
-    install: undefined,
-    yes: false,
-    skipGit: false,
-  };
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    if (token === undefined) {
-      continue;
-    }
-
-    if (!token.startsWith("-")) {
-      if (options.projectName === undefined) {
-        options.projectName = token;
-      }
-      continue;
-    }
-
-    if (token === "--yes" || token === "-y") {
-      options.yes = true;
-      continue;
-    }
-
-    if (token === "--install") {
-      options.install = true;
-      continue;
-    }
-
-    if (token === "--no-install") {
-      options.install = false;
-      continue;
-    }
-
-    if (token === "--skip-git") {
-      options.skipGit = true;
-      continue;
-    }
-
-    if (token.startsWith("--pm=")) {
-      options.packageManager = parsePackageManager(token.split("=")[1] ?? "");
-      continue;
-    }
-
-    if (token === "--pm") {
-      options.packageManager = parsePackageManager(argv[index + 1] ?? "");
-      index += 1;
-      continue;
-    }
-
-    if (token.startsWith("--dir=")) {
-      options.targetDir = token.split("=")[1];
-      continue;
-    }
-
-    if (token === "--dir") {
-      options.targetDir = argv[index + 1];
-      index += 1;
-      continue;
-    }
-
-    if (token === "--apply") {
-      throw new Error("Use `apply` as a subcommand or at the beginning of args.");
-    }
-
-    throw new Error(`Unknown argument: ${token}`);
-  }
-
-  return {
-    command: "create",
-    projectName: options.projectName,
-    targetDir: options.targetDir,
-    packageManager: options.packageManager,
-    install: options.install,
-    yes: options.yes,
-    skipGit: options.skipGit,
-  };
-};
-
 const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
   const options: MutableApplyOptions = {
-    cwd: undefined,
-    packageManager: undefined,
-    install: undefined,
     yes: false,
     dryRun: false,
-    runChecks: undefined,
     backup: false,
     force: false,
   };
@@ -172,23 +90,23 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
     }
 
     if (token.startsWith("--pm=")) {
-      options.packageManager = parsePackageManager(token.split("=")[1] ?? "");
+      options.packageManager = parsePackageManager(parseFlagValue("--pm", token.slice("--pm=".length)));
       continue;
     }
 
     if (token === "--pm") {
-      options.packageManager = parsePackageManager(argv[index + 1] ?? "");
+      options.packageManager = parsePackageManager(parseFlagValue("--pm", argv[index + 1]));
       index += 1;
       continue;
     }
 
     if (token.startsWith("--cwd=")) {
-      options.cwd = token.split("=")[1];
+      options.cwd = parseFlagValue("--cwd", token.slice("--cwd=".length));
       continue;
     }
 
     if (token === "--cwd") {
-      options.cwd = argv[index + 1];
+      options.cwd = parseFlagValue("--cwd", argv[index + 1]);
       index += 1;
       continue;
     }
@@ -198,26 +116,16 @@ const parseApplyOptions = (argv: readonly string[]): ApplyCliOptions => {
 
   return {
     command: "apply",
-    cwd: options.cwd,
-    packageManager: options.packageManager,
-    install: options.install,
     yes: options.yes,
     dryRun: options.dryRun,
-    runChecks: options.runChecks,
     backup: options.backup,
     force: options.force,
-  };
+    ...(options.cwd === undefined ? {} : { cwd: options.cwd }),
+    ...(options.packageManager === undefined ? {} : { packageManager: options.packageManager }),
+    ...(options.install === undefined ? {} : { install: options.install }),
+    ...(options.runChecks === undefined ? {} : { runChecks: options.runChecks }),
+  } as const satisfies ApplyCliOptions;
 };
 
-export const parseCliArgs = (argv: readonly string[]): CliOptions => {
-  const [first, ...rest] = argv;
-  if (first === "apply") {
-    return parseApplyOptions(rest);
-  }
-
-  if (first === "--apply") {
-    return parseApplyOptions(rest);
-  }
-
-  return parseCreateOptions(argv);
-};
+export const parseCliArgs = (argv: readonly string[]): ApplyCliOptions =>
+  parseApplyOptions(argv);

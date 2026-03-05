@@ -5,14 +5,24 @@ import process from "node:process";
 import { detectApplyInput } from "./apply/detect.js";
 import { executeApplyPlan } from "./apply/execute.js";
 import { buildApplyPlan } from "./apply/plan.js";
-import type { ApplyCliOptions } from "./types.js";
+import { isErrnoException } from "./errors.js";
 import { detectPackageManager, packageManagerLabel } from "./package-manager.js";
 import { resolveTemplateDir } from "./template.js";
-import { PACKAGE_MANAGERS, type PackageManager } from "./types.js";
+import { PACKAGE_MANAGERS, type ApplyCliOptions, type PackageManager } from "./types.js";
 import { exitOnCancel } from "./ui.js";
 
-const targetExists = async (targetPath: string): Promise<boolean> =>
-  stat(targetPath).then(() => true).catch(() => false);
+const targetExists = async (targetPath: string): Promise<boolean> => {
+  try {
+    await stat(targetPath);
+    return true;
+  } catch (error: unknown) {
+    if (isErrnoException(error) && error.code === "ENOENT") {
+      return false;
+    }
+
+    throw error;
+  }
+};
 
 const choosePackageManager = async (
   initialValue: PackageManager,
@@ -79,20 +89,20 @@ const resolveCheckDecision = async (
 const summarizePlan = (plan: ReturnType<typeof buildApplyPlan>): readonly string[] => {
   const summary = [
     `Project name: ${plan.projectName}`,
-    `Files to create: ${plan.filesToCreate.length}`,
-    `Files with conflicts: ${plan.conflictingFiles.length}`,
+    `Files to create: ${String(plan.filesToCreate.length)}`,
+    `Files with conflicts: ${String(plan.conflictingFiles.length)}`,
     `Package.json changed: ${plan.packageJsonPlan.summary.changed ? "yes" : "no"}`,
-    `Dependencies to add: ${plan.packageJsonPlan.summary.addedDependencies.length}`,
-    `Dev dependencies to add: ${plan.packageJsonPlan.summary.addedDevDependencies.length}`,
+    `Dependencies to add: ${String(plan.packageJsonPlan.summary.addedDependencies.length)}`,
+    `Dev dependencies to add: ${String(plan.packageJsonPlan.summary.addedDevDependencies.length)}`,
   ];
 
   return summary;
 };
 
 const summarizeResult = (result: Awaited<ReturnType<typeof executeApplyPlan>>): readonly string[] => [
-  `Created files: ${result.createdFiles.length}`,
-  `Overwritten files: ${result.overwrittenFiles.length}`,
-  `Skipped files: ${result.skippedFiles.length}`,
+  `Created files: ${String(result.createdFiles.length)}`,
+  `Overwritten files: ${String(result.overwrittenFiles.length)}`,
+  `Skipped files: ${String(result.skippedFiles.length)}`,
   `package.json updated: ${result.packageJsonUpdated ? "yes" : "no"}`,
   `Install ran: ${result.installRan ? "yes" : "no"}`,
   `Checks ran: ${result.checksRan.length > 0 ? result.checksRan.join(", ") : "none"}`,

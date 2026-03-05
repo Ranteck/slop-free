@@ -1,4 +1,5 @@
 import { select } from "@clack/prompts";
+import process from "node:process";
 import { exitOnCancel } from "../ui.js";
 
 export type ConflictResolution = "overwrite" | "skip";
@@ -19,7 +20,7 @@ export const promptFileConflictResolution = async (
     return "overwrite";
   }
 
-  while (true) {
+  for (;;) {
     const decision = await select({
       message: `File ${relativePath} already exists. What should apply do?`,
       initialValue: "overwrite",

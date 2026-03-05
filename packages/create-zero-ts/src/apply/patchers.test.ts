@@ -38,6 +38,7 @@ describe("buildPackageJsonPlan", (): void => {
     expect(plan.summary.addedDependencies).toContain("zod");
     expect(plan.summary.addedDevDependencies).toContain("eslint");
     expect(plan.next.scripts?.prepare).toBe("lefthook install");
+    expect(plan.summary.addedScripts).toContain("prepare");
   });
 
   it("merges existing prepare script with lefthook install", (): void => {
@@ -56,5 +57,32 @@ describe("buildPackageJsonPlan", (): void => {
 
     expect(plan.next.scripts?.prepare).toBe("husky install && lefthook install");
     expect(plan.summary.updatedPrepareScript).toBe(true);
+  });
+
+  it("does not duplicate lefthook install when prepare already contains it", (): void => {
+    const current: PackageJsonLike = {
+      scripts: {
+        prepare: "lefthook install",
+      },
+    };
+    const template: PackageJsonLike = {
+      scripts: {
+        prepare: "lefthook install",
+      },
+    };
+
+    const plan = buildPackageJsonPlan("package.json", current, template, "demo");
+
+    expect(plan.next.scripts?.prepare).toBe("lefthook install");
+    expect(plan.summary.updatedPrepareScript).toBe(false);
+  });
+
+  it("returns fallback name and module defaults when current is undefined", (): void => {
+    const plan = buildPackageJsonPlan("package.json", undefined, {}, "my-app");
+
+    expect(plan.next.name).toBe("my-app");
+    expect(plan.next.version).toBe("0.1.0");
+    expect(plan.next.type).toBe("module");
+    expect(plan.next.private).toBe(true);
   });
 });

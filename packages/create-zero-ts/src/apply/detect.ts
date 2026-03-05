@@ -14,7 +14,11 @@ export interface ApplyDetection {
 
 const readJson = async <T>(filePath: string): Promise<T> => {
   const source = await readFile(filePath, "utf8");
-  return JSON.parse(source) as T;
+  try {
+    return JSON.parse(source) as T;
+  } catch (error: unknown) {
+    throw new Error(`Invalid JSON in ${filePath}.`, { cause: error });
+  }
 };
 
 export const readJsonIfExists = async <T>(filePath: string): Promise<T | undefined> => {
@@ -41,14 +45,29 @@ export const detectApplyInput = async (
 
   const templatePackageJsonPath = path.join(templateDir, "package.json");
   const templatePackageJsonRaw = await readJson<PackageJsonLike>(templatePackageJsonPath);
-  const templatePackageJson: PackageJsonLike = JSON.parse(
-    renderTemplateContent(JSON.stringify(templatePackageJsonRaw), projectName),
-  ) as PackageJsonLike;
+  const renderedTemplatePackageJson = renderTemplateContent(JSON.stringify(templatePackageJsonRaw), projectName);
+  const templatePackageJson: PackageJsonLike = ((): PackageJsonLike => {
+    try {
+      return JSON.parse(renderedTemplatePackageJson) as PackageJsonLike;
+    } catch (error: unknown) {
+      throw new Error(`Invalid rendered JSON from template package file: ${templatePackageJsonPath}.`, {
+        cause: error,
+      });
+    }
+  })();
 
   const managedFiles = await Promise.all(
     MANAGED_TEMPLATE_FILES.map(async (managedTemplateFile): Promise<ManagedFile> => {
       const sourceTemplatePath = path.join(templateDir, managedTemplateFile.sourceRelativePath);
-      const sourceContent = await readFile(sourceTemplatePath, "utf8");
+      let sourceContent: string;
+      try {
+        sourceContent = await readFile(sourceTemplatePath, "utf8");
+      } catch (error: unknown) {
+        throw new Error(
+          `Failed to read template file ${managedTemplateFile.sourceRelativePath}. Run \`npm run sync:template\` or reinstall create-zero-ts.`,
+          { cause: error },
+        );
+      }
       const renderedContent = renderTemplateContent(sourceContent, projectName);
       const targetPath = path.join(targetDir, managedTemplateFile.targetRelativePath);
       const existingContent = await readTextIfExists(targetPath);

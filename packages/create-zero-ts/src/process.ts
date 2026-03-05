@@ -13,7 +13,17 @@ export const runCommand = (
     shell: process.platform === "win32",
   });
 
+  if (result.error !== undefined) {
+    throw new Error(`Failed to start command: ${command} ${args.join(" ")}`, {
+      cause: result.error,
+    });
+  }
+
   if (result.status !== 0) {
-    throw new Error(`Command failed: ${command} ${args.join(" ")}`);
+    const exitCode = result.status === null ? "unknown" : String(result.status);
+    const signal = result.signal ?? "none";
+    throw new Error(
+      `Command failed (exit ${exitCode}, signal ${signal}): ${command} ${args.join(" ")}`,
+    );
   }
 };

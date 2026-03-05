@@ -1,5 +1,3 @@
-import type { PackageManager } from "../types.js";
-
 export interface PackageJsonLike {
   name?: string;
   version?: string;
@@ -10,17 +8,6 @@ export interface PackageJsonLike {
   devDependencies?: Record<string, string>;
   engines?: Record<string, string>;
   [key: string]: unknown;
-}
-
-export interface ApplyExecutionOptions {
-  readonly targetDir: string;
-  readonly packageManager: PackageManager;
-  readonly install?: boolean;
-  readonly runChecks?: boolean;
-  readonly yes: boolean;
-  readonly dryRun: boolean;
-  readonly backup: boolean;
-  readonly force: boolean;
 }
 
 export interface ManagedFile {

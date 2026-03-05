@@ -1,4 +1,5 @@
 import path from "node:path";
+import { log } from "@clack/prompts";
 import { runPostApplyChecks } from "./checks.js";
 import { backupFile, readTextIfExists, writeTextFile } from "./io.js";
 import { promptFileConflictResolution } from "./prompts.js";
@@ -47,15 +48,19 @@ const applyPackageJson = async (
     return false;
   }
 
-  const decision = currentSource === undefined
-    ? "overwrite"
-    : await promptFileConflictResolution(
+  let decision: "overwrite" | "skip";
+  if (currentSource === undefined) {
+    log.warn("No package.json found in target directory — will create one from template.");
+    decision = "overwrite";
+  } else {
+    decision = await promptFileConflictResolution(
       "package.json",
       currentSource,
       nextSource,
       options.yes,
       options.force,
     );
+  }
 
   if (decision === "skip") {
     return false;
@@ -123,7 +128,7 @@ export const executeApplyPlan = async (
     }
 
     if (options.backup && !options.dryRun) {
-      await backupFile(targetPath);
+      await backupFile(targetPath); // throws with context if backup fails — overwrite will not proceed
     }
 
     await writeManagedFile(
@@ -139,15 +144,26 @@ export const executeApplyPlan = async (
 
   let installRan = false;
   if (options.shouldInstall) {
-    if (!options.dryRun) {
-      runCommand(
-        options.packageManager,
-        installCommand(options.packageManager),
-        options.targetDir,
-        "inherit",
-      );
+    if (options.dryRun) {
+      installRan = true; // dry-run: would have installed
+    } else {
+      const installArgs = installCommand(options.packageManager);
+      try {
+        // runCommand is synchronous (spawnSync) — if refactored to async, add await here
+        runCommand(
+          options.packageManager,
+          installArgs,
+          options.targetDir,
+          "inherit",
+        );
+        installRan = true;
+      } catch (error: unknown) {
+        throw new Error(
+          `Install failed after apply wrote project changes (created: ${String(createdFiles.length)}, overwritten: ${String(overwrittenFiles.length)}, package.json updated: ${packageJsonUpdated ? "yes" : "no"}). The project may be in a partial state. Review changes and rerun \`${options.packageManager} ${installArgs.join(" ")}\`.`,
+          { cause: error },
+        );
+      }
     }
-    installRan = true;
   }
 
   let checksRan: readonly string[] = [];
@@ -159,7 +175,18 @@ export const executeApplyPlan = async (
         packageJsonUpdated
           ? plan.packageJsonPlan.next
           : (plan.packageJsonPlan.current ?? plan.packageJsonPlan.next);
-      checksRan = runPostApplyChecks(options.packageManager, options.targetDir, packageJsonForChecks);
+      try {
+        // runCommand is synchronous (spawnSync) — if refactored to async, add await here
+        checksRan = runPostApplyChecks(options.packageManager, options.targetDir, packageJsonForChecks);
+      } catch (error: unknown) {
+        throw new Error(
+          `Post-apply check failed (apply already wrote project changes — ` +
+          `created: ${String(createdFiles.length)}, overwritten: ${String(overwrittenFiles.length)}, ` +
+          `package.json updated: ${packageJsonUpdated ? "yes" : "no"}). ` +
+          `Review changes then fix the check failure.`,
+          { cause: error },
+        );
+      }
     }
   }
 

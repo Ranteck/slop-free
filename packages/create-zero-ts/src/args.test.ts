@@ -2,38 +2,9 @@ import { describe, expect, it } from "vitest";
 import { parseCliArgs } from "./args.js";
 
 describe("parseCliArgs", (): void => {
-  it("parses create flags and positional project name", (): void => {
-    const parsed = parseCliArgs(["demo-app", "--pm", "pnpm", "--install", "--yes"]);
-
-    expect(parsed.command).toBe("create");
-    if (parsed.command !== "create") {
-      throw new Error("Expected create command");
-    }
-
-    expect(parsed.projectName).toBe("demo-app");
-    expect(parsed.packageManager).toBe("pnpm");
-    expect(parsed.install).toBe(true);
-    expect(parsed.yes).toBe(true);
-  });
-
-  it("parses assignment-style create flags", (): void => {
-    const parsed = parseCliArgs(["--pm=npm", "--dir=./tmp/demo", "--no-install"]);
-
-    expect(parsed.command).toBe("create");
-    if (parsed.command !== "create") {
-      throw new Error("Expected create command");
-    }
-
-    expect(parsed.packageManager).toBe("npm");
-    expect(parsed.targetDir).toBe("./tmp/demo");
-    expect(parsed.install).toBe(false);
-  });
-
-  it("parses apply command flags", (): void => {
+  it("parses apply flags", (): void => {
     const parsed = parseCliArgs([
-      "apply",
-      "--pm",
-      "yarn",
+      "--pm", "yarn",
       "--cwd=./project",
       "--dry-run",
       "--backup",
@@ -41,11 +12,6 @@ describe("parseCliArgs", (): void => {
       "--check",
       "--no-install",
     ]);
-
-    expect(parsed.command).toBe("apply");
-    if (parsed.command !== "apply") {
-      throw new Error("Expected apply command");
-    }
 
     expect(parsed.packageManager).toBe("yarn");
     expect(parsed.cwd).toBe("./project");
@@ -56,21 +22,69 @@ describe("parseCliArgs", (): void => {
     expect(parsed.install).toBe(false);
   });
 
-  it("parses --apply alias", (): void => {
-    const parsed = parseCliArgs(["--apply", "--yes", "--no-check"]);
-
-    expect(parsed.command).toBe("apply");
-    if (parsed.command !== "apply") {
-      throw new Error("Expected apply command");
-    }
-
-    expect(parsed.yes).toBe(true);
-    expect(parsed.runChecks).toBe(false);
-  });
-
   it("throws on unknown flags", (): void => {
     expect((): void => {
       parseCliArgs(["--unknown"]);
     }).toThrowError("Unknown argument");
+  });
+
+  it("reports missing value when --pm is followed by another flag", (): void => {
+    expect((): void => {
+      parseCliArgs(["--pm", "--yes"]);
+    }).toThrowError("Missing value for --pm");
+  });
+
+  it("throws on unsupported package manager (space-separated)", (): void => {
+    expect((): void => {
+      parseCliArgs(["--pm", "cargo"]);
+    }).toThrowError("Unsupported package manager");
+  });
+
+  it("throws on unsupported package manager (assignment-style)", (): void => {
+    expect((): void => {
+      parseCliArgs(["--pm=pip"]);
+    }).toThrowError("Unsupported package manager");
+  });
+
+  it("throws on positional argument in apply command", (): void => {
+    expect((): void => {
+      parseCliArgs(["apply", "some-dir"]);
+    }).toThrowError("Unknown positional argument for apply");
+  });
+
+  it("produces all-false defaults when no flags are supplied", (): void => {
+    const result = parseCliArgs([]);
+    expect(result.command).toBe("apply");
+    expect(result.yes).toBe(false);
+    expect(result.dryRun).toBe(false);
+    expect(result.backup).toBe(false);
+    expect(result.force).toBe(false);
+    expect(result.cwd).toBeUndefined();
+    expect(result.packageManager).toBeUndefined();
+    expect(result.install).toBeUndefined();
+    expect(result.runChecks).toBeUndefined();
+  });
+
+  it("throws when --cwd is the last argument", (): void => {
+    expect((): void => {
+      parseCliArgs(["--cwd"]);
+    }).toThrowError("Missing value for --cwd");
+  });
+
+  it("throws when --cwd is followed by another flag", (): void => {
+    expect((): void => {
+      parseCliArgs(["--cwd", "--dry-run"]);
+    }).toThrowError("Missing value for --cwd");
+  });
+
+  it("throws when --cwd= has an empty value", (): void => {
+    expect((): void => {
+      parseCliArgs(["--cwd="]);
+    }).toThrowError("Missing value for --cwd");
+  });
+
+  it("parses --no-check as runChecks false", (): void => {
+    const result = parseCliArgs(["--no-check"]);
+    expect(result.runChecks).toBe(false);
   });
 });
