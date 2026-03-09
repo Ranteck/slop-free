@@ -59,7 +59,7 @@ describe("executeApplyPlan", (): void => {
   });
 
   it("writes conflict markers and suppresses install/checks when conflicts remain", async (): Promise<void> => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "slop-free-execute-"));
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "strong-mode-execute-"));
     await mkdir(path.join(tempDir, "src"), { recursive: true });
     await writeFile(
       path.join(tempDir, "package.json"),
@@ -95,7 +95,7 @@ describe("executeApplyPlan", (): void => {
     expect(eslintConfig).toContain("<<<<<<< current project");
     expect(eslintConfig).toContain("semi: 'error'");
     expect(eslintConfig).toContain("export default []");
-    expect(eslintConfig).toContain(">>>>>>> slop-free template");
+    expect(eslintConfig).toContain(">>>>>>> strong-mode template");
     expect(runCommandMock).not.toHaveBeenCalled();
     expect(runPostApplyChecksMock).not.toHaveBeenCalled();
   });

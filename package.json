@@ -1,5 +1,5 @@
 {
-  "name": "slop-free-monorepo",
+  "name": "strong-mode-monorepo",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,11 +8,11 @@
   ],
   "scripts": {
     "sync:template": "node scripts/sync-template.mjs",
-    "build": "npm run build -w slop-free",
-    "typecheck": "npm run typecheck -w slop-free",
-    "lint": "npm run lint -w slop-free",
-    "test": "npm run test -w slop-free",
-    "check": "npm run check -w slop-free",
+    "build": "npm run build -w strong-mode",
+    "typecheck": "npm run typecheck -w strong-mode",
+    "lint": "npm run lint -w strong-mode",
+    "test": "npm run test -w strong-mode",
+    "check": "npm run check -w strong-mode",
     "lint:fix": "eslint . --fix --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

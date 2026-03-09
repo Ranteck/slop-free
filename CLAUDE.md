@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`slop-free` is an ultra-strict TypeScript CLI tool focused on anti-slop defaults for AI-assisted coding. It retrofits existing projects with strict TypeScript configurations and quality gates via the `apply` command.
+`strong-mode` is an ultra-strict TypeScript CLI tool focused on strong-mode defaults for AI-assisted coding. It retrofits existing projects with strict TypeScript configurations and quality gates via the `apply` command.
 
-Published as `slop-free` on npm, invoked via `npx slop-free`.
+Published as `strong-mode` on npm, invoked via `npx strong-mode`.
 
 ## Repository Structure
 
 This is an npm workspace monorepo with two key packages:
 
 - **`packages/scaffold-ultra/template/`**: Source of truth for all scaffold files (tsconfig, eslint, vitest, etc.)
-- **`packages/slop-free/`**: Published CLI package that contains the generator logic
+- **`packages/strong-mode/`**: Published CLI package that contains the generator logic
 
-**Critical sync mechanism**: `scripts/sync-template.mjs` copies `scaffold-ultra/template/` → `slop-free/template/` for npm publishing. This runs automatically before build/pack via prebuild/prepack hooks.
+**Critical sync mechanism**: `scripts/sync-template.mjs` copies `scaffold-ultra/template/` → `strong-mode/template/` for npm publishing. This runs automatically before build/pack via prebuild/prepack hooks.
 
 ## Common Commands
 
@@ -24,27 +24,27 @@ This is an npm workspace monorepo with two key packages:
 ```bash
 npm install                     # Install all workspace dependencies
 npm run sync:template           # Manually sync template (auto-runs before build)
-npm run check                   # Run typecheck, lint, test in slop-free
+npm run check                   # Run typecheck, lint, test in strong-mode
 npm run build                   # Build the CLI package
 ```
 
 ### Testing locally without publishing
 
 ```bash
-npm run build -w slop-free
-node packages/slop-free/dist/cli.js --dry-run --yes
+npm run build -w strong-mode
+node packages/strong-mode/dist/cli.js --dry-run --yes
 ```
 
 ### Running a single test file
 
 ```bash
-npx vitest run src/args.test.ts -w slop-free
-npx vitest run src/apply/patchers.test.ts -w slop-free
+npx vitest run src/args.test.ts -w strong-mode
+npx vitest run src/apply/patchers.test.ts -w strong-mode
 ```
 
 ### Generated project commands
 
-Scripts added to target projects by `slop-free`:
+Scripts added to target projects by `strong-mode`:
 
 - `check`: Fast gate (typecheck + lint + format:check + dead-code)
 - `quality`: Full gate (check + test:coverage + deps:graph + deps:cycles + audit)
@@ -70,7 +70,7 @@ Scripts added to target projects by `slop-free`:
 
 **`src/template.ts`**: Core template operations. Files use `__PROJECT_NAME__` as a token placeholder, replaced with the actual project name during copy/detect. Template validation uses `sanitizePackageName()` and `assertValidPackageName()`.
 
-**9 managed template files** (defined in `src/apply/constants.ts`): tsconfig.json, eslint.config.mjs, prettier.config.mjs, vitest.config.ts, knip.config.ts, depcruise.config.cjs, lefthook.yml, .gitignore, src/env.ts.
+**10 managed template files** (defined in `src/apply/constants.ts`): tsconfig.json, eslint.config.mjs, prettier.config.mjs, vitest.config.ts, knip.config.ts, depcruise.config.cjs, lefthook.yml, `scripts/run-package-manager.sh`, .gitignore, src/env.ts.
 
 ### Apply Command Pipeline
 
@@ -79,7 +79,7 @@ The apply command (for existing projects) uses a detect → plan → execute pip
 1. **`src/apply/detect.ts`**: Reads target project state — existing package.json, which managed files already exist, and their current content
 2. **`src/apply/plan.ts`**: Splits managed files into `filesToCreate` (new) and `conflictingFiles` (existing), builds package.json merge plan
 3. **`src/apply/patchers.ts`**: Generates package.json merge plan — adds template dependencies/scripts without removing existing ones. Special handling for `prepare` script (appends `lefthook install` if missing)
-4. **`src/apply/execute.ts`**: Executes the plan with dry-run, backup (`{file}.slop-free-backup.{ISO-timestamp}`), and force options. Prompts for conflict resolution (overwrite/skip/diff preview)
+4. **`src/apply/execute.ts`**: Executes the plan with dry-run, backup (`{file}.strong-mode-backup.{ISO-timestamp}`), and force options. Prompts for conflict resolution (overwrite/skip/diff preview)
 
 ### Package Manager Detection (`src/package-manager.ts`)
 
@@ -87,7 +87,7 @@ Detection order: lockfile presence (`package-lock.json` → npm, `pnpm-lock.yaml
 
 ### Build Tooling
 
-**tsup** bundles `src/cli.ts` → `dist/cli.js` as ESM with `#!/usr/bin/env node` shebang, targeting Node 22. Published package includes `dist/` and `template/` directories with one bin entry: `slop-free`.
+**tsup** bundles `src/cli.ts` → `dist/cli.js` as ESM with `#!/usr/bin/env node` shebang, targeting Node 22. Published package includes `dist/` and `template/` directories with one bin entry: `strong-mode`.
 
 ## Strict TypeScript Philosophy
 
@@ -117,7 +117,7 @@ Generated projects enforce extreme type safety:
 ## Testing
 
 - Uses Vitest with globals mode (`describe`, `it`, `expect` available without imports)
-- Test files: `*.test.ts` colocated in `packages/slop-free/src/`
+- Test files: `*.test.ts` colocated in `packages/strong-mode/src/`
 - Key test suites: `args.test.ts` (flag parsing), `template.test.ts` (name validation), `apply/patchers.test.ts` (package.json merge), `apply/plan.test.ts` (file splitting)
 
 ## Important Constraints

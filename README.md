@@ -1,9 +1,9 @@
-# slop-free
+# strong-mode
 
-Retrofit any TypeScript project with ultra-strict anti-slop defaults.
+Retrofit any TypeScript project with ultra-strict strong-mode defaults.
 
 ```bash
-npx slop-free
+npx strong-mode
 ```
 
 Adds strict TypeScript, ESLint, formatting, and quality gates to your existing project — without touching your existing code.
@@ -47,7 +47,7 @@ Adds strict TypeScript, ESLint, formatting, and quality gates to your existing p
 
 ## How it works
 
-`slop-free` compares 9 config files from its template against your project. New files are created. Conflicts in managed files prompt for Git-style conflict markers, overwrite, skip, or a diff preview. With `--yes`, managed-file conflicts write markers by default; with `--force`, they overwrite. Your `package.json` is merged structurally — dependencies and scripts are added, your existing fields are preserved.
+`strong-mode` compares 10 managed files from its template against your project. New files are created. Conflicts in managed files prompt for Git-style conflict markers, overwrite, skip, or a diff preview. With `--yes`, managed-file conflicts write markers by default; with `--force`, they overwrite. Your `package.json` is merged structurally — dependencies and scripts are added, your existing fields are preserved.
 
 ## Contributing
 
@@ -61,12 +61,12 @@ npm run build           # build CLI
 Test locally:
 
 ```bash
-npm run build -w slop-free
-node packages/slop-free/dist/cli.js --dry-run --yes
+npm run build -w strong-mode
+node packages/strong-mode/dist/cli.js --dry-run --yes
 ```
 
 ## CI and Release
 
 - `.github/workflows/ci.yml` runs install, check, build, and `npm pack` on every push/PR.
-- `.github/workflows/publish.yml` publishes `packages/slop-free` to npm on `v*` tags or manual dispatch.
+- `.github/workflows/publish.yml` publishes `packages/strong-mode` to npm on `v*` tags or manual dispatch.
 - To use npm trusted publishing, configure the package on npm to trust this repository and the exact workflow file `.github/workflows/publish.yml`.

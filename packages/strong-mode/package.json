@@ -1,24 +1,24 @@
 {
-  "name": "slop-free",
+  "name": "strong-mode",
   "version": "0.2.0",
-  "description": "Retrofit any TypeScript project with ultra-strict anti-slop defaults",
+  "description": "Retrofit any TypeScript project with ultra-strict strong-mode defaults",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ranteck/slop-free.git",
-    "directory": "packages/slop-free"
+    "url": "git+https://github.com/Ranteck/strong-mode.git",
+    "directory": "packages/strong-mode"
   },
-  "homepage": "https://github.com/Ranteck/slop-free#readme",
+  "homepage": "https://github.com/Ranteck/strong-mode#readme",
   "keywords": [
     "typescript",
     "eslint",
     "strict",
-    "anti-slop",
+    "strong-mode",
     "code-quality"
   ],
   "type": "module",
   "bin": {
-    "slop-free": "dist/cli.js"
+    "strong-mode": "dist/cli.js"
   },
   "files": [
     "dist",

@@ -100,7 +100,7 @@ export const detectApplyInput = async (
         sourceContent = await readFile(sourceTemplatePath, "utf8");
       } catch (error: unknown) {
         throw new Error(
-          `Failed to read template file ${managedTemplateFile.sourceRelativePath}. Run \`npm run sync:template\` or reinstall slop-free.`,
+          `Failed to read template file ${managedTemplateFile.sourceRelativePath}. Run \`npm run sync:template\` or reinstall strong-mode.`,
           { cause: error },
         );
       }

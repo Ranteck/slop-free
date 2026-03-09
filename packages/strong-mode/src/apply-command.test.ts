@@ -9,7 +9,7 @@ const ANSI_PATTERN = new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu");
 const stripAnsi = (value: string): string => value.replaceAll(ANSI_PATTERN, "");
 
 const createExistingProject = async (): Promise<string> => {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), "slop-free-apply-command-"));
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "strong-mode-apply-command-"));
   await mkdir(path.join(tempDir, "src"), { recursive: true });
 
   await writeFile(
@@ -160,10 +160,12 @@ describe("runApplyCommand", (): void => {
     expect(parsedTsconfig.exclude).toContain("dist");
 
     expect(
-      topLevelFiles.some((file) => file.startsWith("package.json.slop-free-backup.")),
+      topLevelFiles.some((file) => file.startsWith("package.json.strong-mode-backup.")),
     ).toBe(true);
     expect(
-      topLevelFiles.some((file) => file.startsWith("tsconfig.json.slop-free-backup.")),
+      topLevelFiles.some((file) =>
+        file.startsWith("tsconfig.json.strong-mode-backup."),
+      ),
     ).toBe(true);
     expect(topLevelFiles).toContain("eslint.config.mjs");
     expect(topLevelFiles).toContain("vitest.config.ts");

@@ -24,11 +24,11 @@ jobs:
         run: npm ci
 
       - name: Run checks
-        run: npm run check -w slop-free
+        run: npm run check -w strong-mode
 
       - name: Build package
-        run: npm run build -w slop-free
+        run: npm run build -w strong-mode
 
       - name: Pack release artifact
-        working-directory: packages/slop-free
+        working-directory: packages/strong-mode
         run: npm pack

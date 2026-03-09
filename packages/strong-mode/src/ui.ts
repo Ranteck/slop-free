@@ -118,7 +118,7 @@ const toneColor = (value: string, tone: UiTone): string => {
 };
 
 export const formatIntroTitle = (): string =>
-  `${color.bold(palette.brand("slop-free"))} ${palette.muted("anti-slop retrofit")}`;
+  `${color.bold(palette.brand("strong-mode"))} ${palette.muted("strong-mode retrofit")}`;
 
 export const formatSectionTitle = (title: string): string =>
   color.bold(palette.brand(title));

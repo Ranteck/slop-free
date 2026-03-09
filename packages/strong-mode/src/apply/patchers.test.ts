@@ -3,7 +3,7 @@ import { buildPackageJsonPlan } from "./patchers.js";
 import type { PackageJsonLike } from "./types.js";
 
 describe("buildPackageJsonPlan", (): void => {
-  it("adds missing anti-slop scripts and dependencies", (): void => {
+  it("adds missing strong-mode scripts and dependencies", (): void => {
     const current: PackageJsonLike = {
       name: "demo",
       scripts: {

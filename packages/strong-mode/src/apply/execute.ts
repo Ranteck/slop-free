@@ -44,7 +44,7 @@ const buildConflictFileContent = (
     stripTrailingNewlines(existingContent),
     "=======",
     stripTrailingNewlines(incomingContent),
-    ">>>>>>> slop-free template",
+    ">>>>>>> strong-mode template",
     "",
   ].join("\n");
 
