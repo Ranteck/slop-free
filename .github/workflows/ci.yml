@@ -32,3 +32,13 @@ jobs:
       - name: Pack release artifact
         working-directory: packages/strong-mode
         run: npm pack
+
+      - name: Smoke test packed CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          tarball="$(find "${GITHUB_WORKSPACE}/packages/strong-mode" -maxdepth 1 -name '*.tgz' | head -n 1)"
+          mkdir -p /tmp/strong-mode-smoke
+          cd /tmp/strong-mode-smoke
+          npm init -y >/dev/null 2>&1
+          npm exec --yes --package="$tarball" strong-mode -- --dry-run --yes
