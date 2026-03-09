@@ -59,3 +59,9 @@ Test locally:
 npm run build -w slop-free
 node packages/slop-free/dist/cli.js --dry-run --yes
 ```
+
+## CI and Release
+
+- `.github/workflows/ci.yml` runs install, check, build, and `npm pack` on every push/PR.
+- `.github/workflows/publish.yml` publishes `packages/slop-free` to npm on `v*` tags or manual dispatch.
+- To use npm trusted publishing, configure the package on npm to trust this repository and the exact workflow file `.github/workflows/publish.yml`.

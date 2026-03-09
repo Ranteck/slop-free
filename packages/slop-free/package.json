@@ -1,6 +1,6 @@
 {
   "name": "slop-free",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Retrofit any TypeScript project with ultra-strict anti-slop defaults",
   "license": "MIT",
   "repository": {
