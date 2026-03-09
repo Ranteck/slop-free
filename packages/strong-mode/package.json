@@ -1,6 +1,6 @@
 {
   "name": "strong-mode",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Retrofit any TypeScript project with ultra-strict strong-mode defaults",
   "license": "MIT",
   "repository": {
