@@ -4,3 +4,7 @@ packages/*/dist/
 packages/*/*.tgz
 coverage/
 *.log
+dist/
+coverage/
+.env
+.DS_Store
