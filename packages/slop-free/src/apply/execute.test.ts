@@ -24,9 +24,9 @@ const createPlan = (targetDir: string): ApplyPlan => ({
   filesToCreate: [],
   conflictingFiles: [
     {
-      relativePath: "tsconfig.json",
-      sourceTemplatePath: "/template/tsconfig.json",
-      content: '{\n  "compilerOptions": {\n    "strict": true\n  }\n}\n',
+      relativePath: "eslint.config.mjs",
+      sourceTemplatePath: "/template/eslint.config.mjs",
+      content: "export default [];\n",
       exists: true,
     },
   ],
@@ -66,8 +66,8 @@ describe("executeApplyPlan", (): void => {
       '{\n  "name": "fixture-project",\n  "private": true\n}\n',
     );
     await writeFile(
-      path.join(tempDir, "tsconfig.json"),
-      '{\n  "compilerOptions": {\n    "target": "ES2022"\n  }\n}\n',
+      path.join(tempDir, "eslint.config.mjs"),
+      "export default [{ rules: { semi: 'error' } }];\n",
     );
 
     const result = await executeApplyPlan(createPlan(tempDir), {
@@ -81,17 +81,18 @@ describe("executeApplyPlan", (): void => {
       shouldRunChecks: true,
     });
 
-    const tsconfig = await readFile(path.join(tempDir, "tsconfig.json"), "utf8");
+    const eslintConfig = await readFile(path.join(tempDir, "eslint.config.mjs"), "utf8");
 
-    expect(result.conflictedFiles).toEqual(["tsconfig.json"]);
+    expect(result.conflictedFiles).toEqual(["eslint.config.mjs"]);
+    expect(result.mergedFiles).toEqual([]);
     expect(result.overwrittenFiles).toEqual([]);
     expect(result.skippedFiles).toEqual([]);
     expect(result.installRan).toBe(false);
     expect(result.checksRan).toEqual([]);
-    expect(tsconfig).toContain("<<<<<<< current project");
-    expect(tsconfig).toContain("\"target\": \"ES2022\"");
-    expect(tsconfig).toContain("\"strict\": true");
-    expect(tsconfig).toContain(">>>>>>> slop-free template");
+    expect(eslintConfig).toContain("<<<<<<< current project");
+    expect(eslintConfig).toContain("semi: 'error'");
+    expect(eslintConfig).toContain("export default []");
+    expect(eslintConfig).toContain(">>>>>>> slop-free template");
     expect(runCommandMock).not.toHaveBeenCalled();
     expect(runPostApplyChecksMock).not.toHaveBeenCalled();
   });

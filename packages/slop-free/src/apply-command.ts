@@ -130,6 +130,11 @@ const summarizeResult = (
     formatSectionTitle(dryRun ? "Dry-run Result" : "Apply Result"),
     formatKeyValue("Created files", String(result.createdFiles.length), "success"),
     formatKeyValue(
+      "Merged files",
+      String(result.mergedFiles.length),
+      result.mergedFiles.length > 0 ? "success" : "neutral",
+    ),
+    formatKeyValue(
       "Conflicted files",
       String(result.conflictedFiles.length),
       result.conflictedFiles.length > 0 ? "warning" : "neutral",

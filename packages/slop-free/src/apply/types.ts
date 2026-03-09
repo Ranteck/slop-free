@@ -45,6 +45,7 @@ export interface ApplyPlan {
 export interface ApplySummary {
   readonly createdFiles: readonly string[];
   readonly conflictedFiles: readonly string[];
+  readonly mergedFiles: readonly string[];
   readonly overwrittenFiles: readonly string[];
   readonly skippedFiles: readonly string[];
   readonly packageJsonUpdated: boolean;

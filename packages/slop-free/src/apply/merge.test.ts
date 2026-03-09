@@ -1,0 +1,72 @@
+import { describe, expect, it } from "vitest";
+import { isMergeableManagedFile, mergeManagedFileContent } from "./merge.js";
+
+describe("mergeManagedFileContent", (): void => {
+  it("merges tsconfig.json additively while preserving existing values", (): void => {
+    const result = mergeManagedFileContent(
+      "tsconfig.json",
+      JSON.stringify({
+        extends: "@repo/tsconfig/base.json",
+        compilerOptions: {
+          target: "ES2022",
+          strict: true,
+          lib: ["ES2022"],
+        },
+        include: ["src"],
+      }),
+      JSON.stringify({
+        compilerOptions: {
+          target: "ES2024",
+          noUncheckedIndexedAccess: true,
+          lib: ["ES2024"],
+        },
+        include: ["src/**/*"],
+        exclude: ["dist"],
+      }),
+    );
+
+    expect(result).toBeDefined();
+
+    const merged = JSON.parse(result ?? "{}") as {
+      extends?: string;
+      include?: string[];
+      exclude?: string[];
+      compilerOptions?: Record<string, unknown>;
+    };
+
+    expect(merged.extends).toBe("@repo/tsconfig/base.json");
+    expect(merged.compilerOptions?.target).toBe("ES2022");
+    expect(merged.compilerOptions?.noUncheckedIndexedAccess).toBe(true);
+    expect(merged.compilerOptions?.lib).toEqual(["ES2022", "ES2024"]);
+    expect(merged.include).toEqual(["src", "src/**/*"]);
+    expect(merged.exclude).toEqual(["dist"]);
+  });
+
+  it("returns undefined when tsconfig.json is invalid", (): void => {
+    const result = mergeManagedFileContent(
+      "tsconfig.json",
+      "{ invalid json",
+      '{"compilerOptions":{"strict":true}}',
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("merges gitignore entries without duplicates", (): void => {
+    const result = mergeManagedFileContent(
+      ".gitignore",
+      "node_modules/\ndist/\n.env\n",
+      "dist/\ncoverage/\n.env\n.DS_Store\n",
+    );
+
+    expect(result).toBe("node_modules/\ndist/\n.env\ncoverage/\n.DS_Store\n");
+  });
+});
+
+describe("isMergeableManagedFile", (): void => {
+  it("identifies the mergeable managed files", (): void => {
+    expect(isMergeableManagedFile("tsconfig.json")).toBe(true);
+    expect(isMergeableManagedFile(".gitignore")).toBe(true);
+    expect(isMergeableManagedFile("eslint.config.mjs")).toBe(false);
+  });
+});

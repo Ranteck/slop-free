@@ -2,6 +2,7 @@ import path from "node:path";
 import { log } from "@clack/prompts";
 import { runPostApplyChecks } from "./checks.js";
 import { backupFile, readTextIfExists, writeTextFile } from "./io.js";
+import { isMergeableManagedFile, mergeManagedFileContent } from "./merge.js";
 import { type ConflictResolution, promptFileConflictResolution } from "./prompts.js";
 import type { ApplyPlan, ApplySummary } from "./types.js";
 import { installCommand } from "../package-manager.js";
@@ -100,6 +101,7 @@ export const executeApplyPlan = async (
 ): Promise<ApplySummary> => {
   const createdFiles: string[] = [];
   const conflictedFiles: string[] = [];
+  const mergedFiles: string[] = [];
   const overwrittenFiles: string[] = [];
   const skippedFiles: string[] = [];
 
@@ -138,7 +140,7 @@ export const executeApplyPlan = async (
       managedFile.content,
       options.yes,
       options.force,
-      "managed-file",
+      isMergeableManagedFile(managedFile.relativePath) ? "mergeable-file" : "managed-file",
     );
 
     if (decision === "skip") {
@@ -146,14 +148,40 @@ export const executeApplyPlan = async (
       continue;
     }
 
+    const nextContent =
+      decision === "merge"
+        ? mergeManagedFileContent(managedFile.relativePath, existing, managedFile.content)
+        : (decision === "conflict"
+          ? buildConflictFileContent(existing, managedFile.content)
+          : managedFile.content);
+
+    if (decision === "merge" && nextContent === undefined) {
+      if (options.backup && !options.dryRun) {
+        await backupFile(targetPath);
+      }
+
+      await writeManagedFile(
+        options.targetDir,
+        managedFile.relativePath,
+        buildConflictFileContent(existing, managedFile.content),
+        options.dryRun,
+      );
+      conflictedFiles.push(managedFile.relativePath);
+      continue;
+    }
+
+    if (nextContent === existing) {
+      skippedFiles.push(managedFile.relativePath);
+      continue;
+    }
+
+    if (nextContent === undefined) {
+      throw new Error(`Merge strategy did not produce content for ${managedFile.relativePath}.`);
+    }
+
     if (options.backup && !options.dryRun) {
       await backupFile(targetPath); // throws with context if backup fails — overwrite will not proceed
     }
-
-    const nextContent =
-      decision === "conflict"
-        ? buildConflictFileContent(existing, managedFile.content)
-        : managedFile.content;
 
     await writeManagedFile(
       options.targetDir,
@@ -164,6 +192,8 @@ export const executeApplyPlan = async (
 
     if (decision === "conflict") {
       conflictedFiles.push(managedFile.relativePath);
+    } else if (decision === "merge") {
+      mergedFiles.push(managedFile.relativePath);
     } else {
       overwrittenFiles.push(managedFile.relativePath);
     }
@@ -214,6 +244,7 @@ export const executeApplyPlan = async (
   return {
     createdFiles,
     conflictedFiles,
+    mergedFiles,
     overwrittenFiles,
     skippedFiles,
     packageJsonUpdated,

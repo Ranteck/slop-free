@@ -8,8 +8,8 @@ import {
   formatToneText,
 } from "../ui.js";
 
-export type ConflictResolution = "conflict" | "overwrite" | "skip";
-export type ConflictPromptMode = "managed-file" | "package-json";
+export type ConflictResolution = "conflict" | "merge" | "overwrite" | "skip";
+export type ConflictPromptMode = "managed-file" | "mergeable-file" | "package-json";
 
 const buildPreview = (label: string, content: string): string => {
   const lines = content.split("\n").slice(0, 40).join("\n");
@@ -44,6 +44,35 @@ const promptOptionsForMode = (
         },
       ],
       yesResolution: "overwrite",
+    };
+  }
+
+  if (mode === "mergeable-file") {
+    return {
+      initialValue: "merge",
+      options: [
+        {
+          label: formatRecommendedAction("Merge both"),
+          value: "merge",
+        },
+        {
+          label: formatToneText("Write merge conflict markers", "warning"),
+          value: "conflict",
+        },
+        {
+          label: formatToneText("Overwrite", "success"),
+          value: "overwrite",
+        },
+        {
+          label: formatMuted("Skip"),
+          value: "skip",
+        },
+        {
+          label: formatToneText("View diff preview", "info"),
+          value: "preview",
+        },
+      ],
+      yesResolution: "merge",
     };
   }
 
@@ -97,7 +126,7 @@ export const promptFileConflictResolution = async (
     });
 
     const value = exitOnCancel(decision);
-    if (value === "conflict" || value === "overwrite" || value === "skip") {
+    if (value === "conflict" || value === "merge" || value === "overwrite" || value === "skip") {
       return value;
     }
 

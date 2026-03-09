@@ -26,6 +26,18 @@ describe("promptFileConflictResolution", (): void => {
     expect(result).toBe("conflict");
   });
 
+  it("returns merge immediately when yes is true for mergeable files", async (): Promise<void> => {
+    const result = await promptFileConflictResolution(
+      "tsconfig.json",
+      "existing content",
+      "incoming content",
+      true,
+      false,
+      "mergeable-file",
+    );
+    expect(result).toBe("merge");
+  });
+
   it("returns overwrite immediately when yes is true for package.json", async (): Promise<void> => {
     const result = await promptFileConflictResolution(
       "package.json",

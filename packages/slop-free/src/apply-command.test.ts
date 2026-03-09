@@ -78,15 +78,16 @@ describe("runApplyCommand", (): void => {
     const plainLines = lines.map(stripAnsi);
 
     expect(plainLines).toContain("Dry-run Result");
-    expect(plainLines).toContain("  Conflicted files: 1");
-    expect(plainLines).toContain("  Install: would skip due to unresolved conflicts");
-    expect(plainLines).toContain("  Checks: would skip due to unresolved conflicts");
+    expect(plainLines).toContain("  Merged files: 1");
+    expect(plainLines).toContain("  Conflicted files: 0");
+    expect(plainLines).toContain("  Install: would run");
+    expect(plainLines).toContain("  Checks: would run");
     expect(await readdir(tempDir)).toEqual(beforeFiles);
     expect(await readFile(path.join(tempDir, "package.json"), "utf8")).toBe(beforePackageJson);
     expect(await readFile(path.join(tempDir, "tsconfig.json"), "utf8")).toBe(beforeTsconfig);
   });
 
-  it("merges package.json and writes conflict markers for conflicting files", async (): Promise<void> => {
+  it("merges package.json and tsconfig.json for an existing project", async (): Promise<void> => {
     const tempDir = await createExistingProject();
 
     const lines = await runApplyCommand({
@@ -114,7 +115,8 @@ describe("runApplyCommand", (): void => {
     const topLevelFiles = await readdir(tempDir);
 
     expect(plainLines).toContain("Apply Result");
-    expect(plainLines).toContain("  Conflicted files: 1");
+    expect(plainLines).toContain("  Merged files: 1");
+    expect(plainLines).toContain("  Conflicted files: 0");
     expect(plainLines).toContain("  Package.json updated: yes");
     expect(plainLines).toContain("  Install ran: no");
     expect(plainLines).toContain("  Checks ran: none");
@@ -129,11 +131,17 @@ describe("runApplyCommand", (): void => {
     expect(packageJson.devDependencies.vitest).toBeDefined();
     expect(packageJson.engines.node).toBe(">=22");
 
-    expect(tsconfig).toContain("<<<<<<< current project");
-    expect(tsconfig).toContain("=======");
-    expect(tsconfig).toContain(">>>>>>> slop-free template");
-    expect(tsconfig).toContain("\"target\": \"ES2022\"");
-    expect(tsconfig).toContain("\"noUncheckedIndexedAccess\": true");
+    const parsedTsconfig = JSON.parse(tsconfig) as {
+      compilerOptions?: Record<string, unknown>;
+      include?: string[];
+      exclude?: string[];
+    };
+
+    expect(parsedTsconfig.compilerOptions?.target).toBe("ES2022");
+    expect(parsedTsconfig.compilerOptions?.outDir).toBe("dist");
+    expect(parsedTsconfig.compilerOptions?.noUncheckedIndexedAccess).toBe(true);
+    expect(parsedTsconfig.include).toEqual(["src", "src/**/*"]);
+    expect(parsedTsconfig.exclude).toContain("dist");
 
     expect(topLevelFiles.some((file) => file.startsWith("package.json.slop-free-backup."))).toBe(true);
     expect(topLevelFiles.some((file) => file.startsWith("tsconfig.json.slop-free-backup."))).toBe(true);
