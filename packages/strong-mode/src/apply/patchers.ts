@@ -38,11 +38,11 @@ const mergePrepareScript = (
     return templateValue;
   }
 
-  if (existingValue.includes("lefthook install")) {
+  if (existingValue.includes(templateValue)) {
     return existingValue;
   }
 
-  return `${existingValue} && lefthook install`;
+  return `${existingValue} && ${templateValue}`;
 };
 
 const mergeScripts = (

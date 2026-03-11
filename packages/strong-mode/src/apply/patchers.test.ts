@@ -17,7 +17,7 @@ describe("buildPackageJsonPlan", (): void => {
       scripts: {
         test: "vitest run",
         check: "npm run lint",
-        prepare: "lefthook install",
+        prepare: "node ./scripts/prepare-hooks.mjs",
       },
       dependencies: {
         zod: "^3.0.0",
@@ -39,11 +39,11 @@ describe("buildPackageJsonPlan", (): void => {
     expect(plan.next.scripts?.test).toBe("vitest");
     expect(plan.summary.addedDependencies).toContain("zod");
     expect(plan.summary.addedDevDependencies).toContain("eslint");
-    expect(plan.next.scripts?.prepare).toBe("lefthook install");
+    expect(plan.next.scripts?.prepare).toBe("node ./scripts/prepare-hooks.mjs");
     expect(plan.summary.addedScripts).toContain("prepare");
   });
 
-  it("merges existing prepare script with lefthook install", (): void => {
+  it("merges existing prepare script with the strong-mode hook installer", (): void => {
     const current: PackageJsonLike = {
       scripts: {
         prepare: "husky install",
@@ -51,31 +51,33 @@ describe("buildPackageJsonPlan", (): void => {
     };
     const template: PackageJsonLike = {
       scripts: {
-        prepare: "lefthook install",
+        prepare: "node ./scripts/prepare-hooks.mjs",
       },
     };
 
     const plan = buildPackageJsonPlan("package.json", current, template, "demo");
 
-    expect(plan.next.scripts?.prepare).toBe("husky install && lefthook install");
+    expect(plan.next.scripts?.prepare).toBe(
+      "husky install && node ./scripts/prepare-hooks.mjs",
+    );
     expect(plan.summary.updatedPrepareScript).toBe(true);
   });
 
-  it("does not duplicate lefthook install when prepare already contains it", (): void => {
+  it("does not duplicate the strong-mode hook installer when prepare already contains it", (): void => {
     const current: PackageJsonLike = {
       scripts: {
-        prepare: "lefthook install",
+        prepare: "node ./scripts/prepare-hooks.mjs",
       },
     };
     const template: PackageJsonLike = {
       scripts: {
-        prepare: "lefthook install",
+        prepare: "node ./scripts/prepare-hooks.mjs",
       },
     };
 
     const plan = buildPackageJsonPlan("package.json", current, template, "demo");
 
-    expect(plan.next.scripts?.prepare).toBe("lefthook install");
+    expect(plan.next.scripts?.prepare).toBe("node ./scripts/prepare-hooks.mjs");
     expect(plan.summary.updatedPrepareScript).toBe(false);
   });
 

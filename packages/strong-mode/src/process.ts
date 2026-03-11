@@ -13,7 +13,7 @@ export const runCommand = (
     shell: process.platform === "win32",
   });
 
-  if (result.error !== undefined) {
+  if (result.error != null) {
     throw new Error(`Failed to start command: ${command} ${args.join(" ")}`, {
       cause: result.error,
     });
